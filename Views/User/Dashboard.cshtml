@@ -1,0 +1,465 @@
+﻿@model StudentERP.Controllers.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<style>
+    .dashboard-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .welcome-banner {
+        width: 100%;
+        background: #374151;
+        color: #ffffff;
+        padding: 10px 0;
+        overflow: hidden;
+        border-bottom: 1px solid #d1d5db;
+        margin-bottom: 20px;
+    }
+
+    .banner-container {
+        display: inline-block;
+        white-space: nowrap;
+        animation: marquee 20s linear infinite;
+    }
+
+    .banner-text {
+        display: inline-block;
+        font-size: 1.2em;
+        font-weight: 500;
+        padding-right: 100px;
+        margin-right: 1175px;
+    }
+
+    @@keyframes marquee {
+        0% {
+            transform: translateX(100vw);
+        }
+
+        100% {
+            transform: translateX(-100%);
+        }
+    }
+
+    .dashboard-container {
+        max-width: 1000px;
+        margin: 10px 0 0 10px;
+        padding: 0;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 20px;
+    }
+
+    .id-card {
+        width: 300px;
+        height: 440px;
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        transition: box-shadow 0.3s ease;
+    }
+
+        .id-card:hover {
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+        }
+
+    .id-card-top {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 40px;
+        background: #374151;
+        border-radius: 4px 4px 0 0;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.2em;
+    }
+
+    .profile-picture {
+        width: 140px;
+        height: 140px;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 3px solid #6b7280;
+        margin-top: 50px;
+        margin-bottom: 10px;
+    }
+
+    .no-picture {
+        width: 140px;
+        height: 140px;
+        border-radius: 8px;
+        background: #e5e7eb;
+        border: 3px dashed #9ca3af;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: #6b7280;
+        font-size: 14px;
+        font-weight: 500;
+        margin-top: 50px;
+        margin-bottom: 10px;
+    }
+
+    .id-info {
+        text-align: center;
+        width: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+        .id-info .full-name {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .id-info p {
+            font-size: 1em;
+            color: #374151;
+            margin: 8px 0;
+            position: relative;
+        }
+
+        .id-info span.label {
+            font-weight: 600;
+            color: #4b5563;
+            margin-right: 5px;
+        }
+
+        .id-info .no-data {
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        .id-info .full-name::after,
+        .id-info p:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 75%;
+            height: 1px;
+            background: #d1d5db;
+        }
+
+        .id-info .full-name::after {
+            width: 75%;
+        }
+
+        .id-info p:nth-child(2)::after {
+            width: 65%;
+        }
+
+        .id-info p:nth-child(3)::after {
+            width: 70%;
+        }
+
+        .id-info p:nth-child(4)::after {
+            width: 65%;
+        }
+
+        .id-info p:last-child::after {
+            display: none;
+        }
+
+    .academic-table-container {
+        flex: 1;
+        width: 450px;
+    }
+
+    .academic-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+        .academic-table th,
+        .academic-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #d1d5db;
+        }
+
+        .academic-table th {
+            background: #374151;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .academic-table tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        .academic-table tr:hover {
+            background: #f3f4f6;
+        }
+
+    .download-btn {
+        background: #ef4444;
+        color: #ffffff;
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9em;
+        transition: background 0.3s ease;
+    }
+
+        .download-btn:hover {
+            background: #dc2626;
+        }
+
+        .download-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+    .sem-nav-container {
+        margin-top: 15px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .sem-btn {
+        display: flex;
+        align-items: center;
+        background: #374151;
+        color: #ffffff;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9em;
+        font-weight: 500;
+        transition: background 0.3s ease;
+    }
+
+        .sem-btn:hover:not(:disabled) {
+            background: #4b5563;
+        }
+
+        .sem-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .sem-btn.prev::before {
+            content: '\2190';
+            margin-right: 6px;
+            font-size: 1em;
+        }
+
+        .sem-btn.next::after {
+            content: '\2192';
+            margin-left: 6px;
+            font-size: 1em;
+        }
+
+    @@media (max-width: 768px) {
+        .dashboard-container {
+            margin: 10px auto;
+            padding: 0;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .id-card {
+            width: 280px;
+            height: 450px;
+            padding: 10px;
+            border-radius: 3px;
+        }
+
+        .id-card-top {
+            height: 35px;
+            border-radius: 3px 3px 0 0;
+            font-size: 1em;
+        }
+
+        .profile-picture, .no-picture {
+            width: 120px;
+            height: 120px;
+            margin-top: 45px;
+            border-radius: 6px;
+        }
+
+        .id-info .full-name {
+            font-size: 1.2em;
+        }
+
+        .id-info p {
+            font-size: 0.9em;
+        }
+
+        .academic-table-container {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .academic-table th,
+        .academic-table td {
+            font-size: 0.9em;
+            padding: 8px;
+        }
+
+        .welcome-banner {
+            padding: 8px 0;
+        }
+
+        .banner-text {
+            font-size: 1em;
+            padding-right: 50px;
+        }
+
+        .banner-container {
+            animation: marquee 15s linear infinite;
+        }
+
+        .sem-nav-container {
+            justify-content: center;
+        }
+
+        .sem-btn {
+            padding: 6px 10px;
+            font-size: 0.85em;
+        }
+    }
+</style>
+
+<div class="dashboard-wrapper">
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+        <div class="banner-container">
+            <span class="banner-text">Welcome to StudentERP</span>
+            <span class="banner-text">Welcome to StudentERP</span>
+            <span class="banner-text">Welcome to StudentERP</span>
+        </div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-container">
+        <!-- ID Card -->
+        <div class="id-card">
+            <div class="id-card-top">Student ID</div>
+            @if (!string.IsNullOrEmpty(Model.ProfilePictureName))
+            {
+                <img src="~/Images/@Model.ProfilePictureName" alt="Profile Picture" class="profile-picture" />
+            }
+            else
+            {
+                <div class="no-picture">No Profile Picture</div>
+            }
+            <div class="id-info">
+                <div class="full-name">@Model.FullName</div>
+                <p><span class="label">Phone:</span> @Model.PhoneNumber</p>
+                <p><span class="label">Father's Name:</span> @Model.FatherName</p>
+                <p><span class="label">Parent's Phone:</span> @Model.ParentPhoneNumber</p>
+                <p><span class="label">Email:</span> @Model.StudentEmail</p>
+            </div>
+        </div>
+
+        <!-- Academic Table -->
+        <div class="academic-table-container">
+            <table class="academic-table">
+                <thead>
+                    <tr>
+                        <th colspan="4">Academic Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Degree:</strong></td>
+                        <td colspan="3">@Model.DegreeName</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Field:</strong></td>
+                        <td colspan="3">@Model.FieldName</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Current Semester:</strong></td>
+                        <td colspan="3">@Model.CurrentSem</td>
+                    </tr>
+                    <tr>
+                        <th>Subject Name</th>
+                        <th>Subject Code</th>
+                        <th>Credits</th>
+                        <th>Download Syllabus</th>
+                    </tr>
+                    @if (Model.Subjects.Any())
+                    {
+                        foreach (var subject in Model.Subjects)
+                        {
+                            <tr>
+                                <td>@subject.SubjectName</td>
+                                <td>@subject.SubjectCode</td>
+                                <td>@subject.SubjectCredit</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(subject.SyllabusFileName))
+                                    {
+                                        <a href="~/syllabus/@subject.SyllabusFileName" download="@subject.SyllabusFileName" class="download-btn">Download</a>
+                                    }
+                                    else
+                                    {
+                                        <button class="download-btn" disabled>No File</button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: #9ca3af;">No subjects available for this semester.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <!-- Semester Navigation Buttons -->
+            @{
+                // Extract semester number (e.g., "8" from "D1F1S8")
+                var semNumberStr = Model.CurrentSem.Substring(Model.CurrentSem.Length - 1);
+                int semNumber;
+                bool isValidSem = int.TryParse(semNumberStr, out semNumber);
+                // Calculate previous and next semester strings
+                var prevSem = isValidSem && semNumber > 1 ? Model.CurrentSem.Substring(0, Model.CurrentSem.Length - 1) + (semNumber - 1) : "";
+                var nextSem = isValidSem && semNumber < 8 ? Model.CurrentSem.Substring(0, Model.CurrentSem.Length - 1) + (semNumber + 1) : "";
+            }
+            <div class="sem-nav-container">
+                <form asp-action="Dashboard" method="get">
+                    <input type="hidden" name="semester" value="@prevSem" />
+                    <button type="submit" class="sem-btn prev" @(string.IsNullOrEmpty(prevSem) ? "disabled" : "")>Previous Semester</button>
+                </form>
+                <form asp-action="Dashboard" method="get">
+                    <input type="hidden" name="semester" value="@nextSem" />
+                    <button type="submit" class="sem-btn next" @(string.IsNullOrEmpty(nextSem) ? "disabled" : "")>Next Semester</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

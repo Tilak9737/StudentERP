@@ -1,0 +1,295 @@
+﻿@model StudentERP.Controllers.EditProfileViewModel
+
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+<style>
+    .container {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 20px;
+        border: 2px solid #ff6b6b;
+        border-radius: 10px;
+        background: white;
+    }
+
+    h2 {
+        color: #4ecdc4;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .profile-info {
+        margin-bottom: 20px;
+    }
+
+        .profile-info label {
+            color: #ff9f1c;
+            font-weight: bold;
+        }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .control-label {
+        color: #ff9f1c;
+        font-weight: bold;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #95e1d3;
+        border-radius: 5px;
+    }
+
+    .btn {
+        padding: 12px 25px;
+        border: none;
+        border-radius: 25px;
+        font-size: 1.1em;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(45deg, #45b7d1, #4ecdc4);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(69, 183, 209, 0.3);
+        }
+
+    .student-id {
+        margin-bottom: 20px;
+        padding: 10px;
+        background: #f8f9fa;
+        border: 1px dashed #ff6b6b;
+        border-radius: 5px;
+    }
+
+        .student-id span {
+            font-weight: bold;
+            color: #ff9f1c;
+        }
+
+    .popup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        min-width: 300px;
+        text-align: center;
+    }
+
+        .popup.success {
+            background: #95e1d3;
+            border: 2px solid #52b788;
+            color: #2d6a4f;
+        }
+
+        .popup.error {
+            background: #ff3860;
+            border: 2px solid #ff1c45;
+            color: white;
+        }
+
+        .popup.confirm {
+            background: #fff3e0;
+            border: 2px solid #ff9f1c;
+            color: #333;
+        }
+
+    .popup-content {
+        margin-bottom: 15px;
+        font-size: 1.2em;
+    }
+
+    .popup-close, .popup-confirm, .popup-cancel {
+        background: #fff;
+        color: #333;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 0 5px;
+    }
+
+        .popup-close:hover, .popup-cancel:hover {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .popup-confirm:hover {
+            background: #4ecdc4;
+            color: white;
+        }
+
+    .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+</style>
+
+<div class="container">
+    <h2>Edit Profile</h2>
+    <div class="profile-info">
+        <label>Email:</label> <span>@Model.StudentEmail</span>
+    </div>
+    <div class="student-id">
+        <label>Your Student ID:</label> <span>@Model.StudentId.ToString().ToUpper()</span>
+        <p>Please rename your image file to match this ID (e.g., @Model.StudentId.ToString().ToUpper() + ".jpg") before uploading.</p>
+    </div>
+
+    <form id="editProfileForm" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <div class="form-group">
+            <label for="profilePicture" class="control-label">Profile Picture</label>
+            <input type="file" id="profilePicture" name="profilePicture" class="form-control" accept="image/*" required />
+        </div>
+        <div class="form-group">
+            <button type="submit" id="uploadButton" class="btn btn-primary">Upload</button>
+        </div>
+    </form>
+
+    <a href="@Url.Action("Dashboard", "User")" class="btn btn-primary">Back to Dashboard</a>
+</div>
+
+<div class="overlay" id="popupOverlay"></div>
+<div class="popup" id="popup">
+    <div class="popup-content" id="popupMessage"></div>
+    <button class="popup-close" id="popupClose">Close</button>
+    <button class="popup-confirm" id="popupConfirm" style="display: none;">Replace</button>
+    <button class="popup-cancel" id="popupCancel" style="display: none;">Cancel</button>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            console.log("jQuery loaded successfully");
+            let formData;
+            const expectedFileName = "@Model.StudentId.ToString().ToUpper()"+".jpg";
+
+            $("#editProfileForm").submit(function (e) {
+                e.preventDefault();
+                formData = new FormData(this);
+                var fileInput = $("#profilePicture")[0];
+
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    showPopup("Please select a file.", "error");
+                    return;
+                }
+
+                var uploadedFileName = fileInput.files[0].name;
+                if (uploadedFileName !== expectedFileName) {
+                    showPopup(`Invalid filename. Please rename your file to '${expectedFileName}' and try again.`, "error");
+                    return;
+                }
+
+                $("#uploadButton").prop("disabled", true).text("Checking...");
+                console.log("Checking if profile picture exists");
+
+                $.ajax({
+                    url: '@Url.Action("CheckProfilePicture", "User")',
+                    type: 'GET',
+                    success: function (response) {
+                        if (response.exists) {
+                            showConfirmPopup("A profile picture (" + response.fileName + ") already exists. Do you want to replace it?");
+                        } else {
+                            submitForm(false); 
+                        }
+                    },
+                    error: function () {
+                        showPopup("Error checking profile picture.", "error");
+                        $("#uploadButton").prop("disabled", false).text("Upload");
+                    }
+                });
+            });
+
+            $("#popupClose").click(function () { hidePopup(); });
+            $("#popupOverlay").click(function () { hidePopup(); });
+            $("#popupCancel").click(function () {
+                hidePopup();
+                $("#uploadButton").prop("disabled", false).text("Upload");
+            });
+            $("#popupConfirm").click(function () {
+                hidePopup();
+                submitForm(true); 
+            });
+
+            function submitForm(replaceConfirmed) {
+                console.log("Submitting form to /User/EditProfile, replaceConfirmed=" + replaceConfirmed);
+                formData.append("replaceConfirmed", replaceConfirmed);
+
+                $.ajax({
+                    url: '@Url.Action("EditProfile", "User")',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: { "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val() },
+                    success: function (response) {
+                        console.log("AJAX success:", response);
+                        $("#uploadButton").prop("disabled", false).text("Upload");
+                        if (response.success) {
+                            showPopup(response.message, "success");
+                            setTimeout(function () {
+                                window.location.href = '@Url.Action("Dashboard", "User")';
+                            }, 2000);
+                        } else if (response.confirmRequired) {
+                            showConfirmPopup(response.message);
+                        } else {
+                            showPopup(response.message, "error");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("AJAX error:", status, error, xhr.responseText);
+                        $("#uploadButton").prop("disabled", false).text("Upload");
+                        showPopup("An error occurred: " + (xhr.responseText || error), "error");
+                    }
+                });
+            }
+
+            function showPopup(message, type) {
+                $("#popupMessage").text(message);
+                $("#popup").removeClass("success error confirm").addClass(type);
+                $("#popupConfirm, #popupCancel").hide();
+                $("#popupClose").show();
+                $("#popup").show();
+                $("#popupOverlay").show();
+            }
+
+            function showConfirmPopup(message) {
+                $("#popupMessage").text(message);
+                $("#popup").removeClass("success error confirm").addClass("confirm");
+                $("#popupClose").hide();
+                $("#popupConfirm, #popupCancel").show();
+                $("#popup").show();
+                $("#popupOverlay").show();
+            }
+
+            function hidePopup() {
+                $("#popup").hide();
+                $("#popupOverlay").hide();
+            }
+        });
+    </script>
+}

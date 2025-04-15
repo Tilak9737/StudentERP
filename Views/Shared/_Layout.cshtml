@@ -1,0 +1,225 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - StudentERP</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .navbar {
+            background: #374151; /* Matches dashboard table header */
+            padding: 15px 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Matches dashboard table shadow */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #d1d5db; /* Matches dashboard borders */
+        }
+
+        .navbar-brand h1 {
+            margin: 0;
+            color: #ffffff; /* White text like dashboard */
+            font-size: 1.8em;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-weight: 600;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+            .navbar-brand h1::after {
+                content: '';
+                position: absolute;
+                bottom: -3px;
+                left: 0;
+                width: 0;
+                height: 2px;
+                background: #ef4444; /* Matches dashboard download button */
+                transition: width 0.3s ease;
+            }
+
+            .navbar-brand h1:hover {
+                color: #f3f4f6; /* Light gray for hover contrast */
+            }
+
+                .navbar-brand h1:hover::after {
+                    width: 100%; /* Underline animation */
+                }
+
+        .navbar-nav {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+
+            .navbar-nav li {
+                margin-left: 20px;
+            }
+
+            .navbar-nav a {
+                color: #ffffff; /* White text like dashboard */
+                text-decoration: none;
+                font-size: 1em;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                padding: 8px 15px;
+                border-radius: 4px; /* Matches dashboard buttons */
+                transition: all 0.3s ease;
+            }
+
+                .navbar-nav a:hover {
+                    background: #ef4444; /* Matches dashboard download button */
+                    color: #ffffff;
+                }
+
+        .hamburger {
+            font-size: 1.4em;
+            color: #ffffff; /* White like dashboard text */
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px 10px;
+            display: inline-block;
+            transition: background 0.3s ease;
+        }
+
+            .hamburger:hover {
+                background: #ef4444; /* Matches dashboard download button */
+                border-radius: 4px;
+            }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 30px;
+            top: 60px;
+            background: #374151; /* Matches navbar */
+            border-radius: 4px; /* Matches dashboard tables */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Matches dashboard shadow */
+            list-style: none;
+            padding: 10px 0;
+            min-width: 150px;
+            z-index: 1000;
+            border: 1px solid #d1d5db; /* Matches dashboard borders */
+        }
+
+            .dropdown-menu li {
+                margin: 0;
+            }
+
+            .dropdown-menu a {
+                display: block;
+                color: #ffffff; /* White text */
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                padding: 10px 20px;
+                text-decoration: none;
+                transition: all 0.3s ease;
+            }
+
+                .dropdown-menu a:hover {
+                    background: #ef4444; /* Matches dashboard download button */
+                    color: #ffffff;
+                }
+
+            .dropdown-menu.show {
+                display: block;
+            }
+
+        main {
+            padding-top: 20px;
+        }
+
+        @@media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                padding: 10px;
+            }
+
+            .navbar-nav {
+                flex-direction: column;
+                width: 100%;
+                margin-top: 10px;
+            }
+
+                .navbar-nav li {
+                    margin: 5px 0;
+                }
+
+                .navbar-nav a {
+                    display: block;
+                    text-align: center;
+                    font-size: 0.9em;
+                    padding: 6px 10px;
+                }
+
+                .navbar-nav .hamburger {
+                    margin: 0 auto;
+                }
+
+            .dropdown-menu {
+                position: static;
+                width: 100%;
+                box-shadow: none;
+                border-radius: 0;
+                right: auto;
+                top: auto;
+                background: #374151; /* Keep navbar color */
+                border: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="navbar-brand">
+                <h1>StudentERP</h1>
+            </div>
+            <ul class="navbar-nav">
+                @if (string.IsNullOrEmpty(Context.Session.GetString("StudentEmail")))
+                {
+                    <li><a href="@Url.Action("Login", "User")">Login</a></li>
+                    <li><a href="@Url.Action("Register", "User")">Register</a></li>
+                }
+                else
+                {
+                    <li><a href="@Url.Action("Dashboard", "User")">Dashboard</a></li>
+                    <li class="hamburger-menu">
+                        <button class="hamburger">☰</button>
+                        <ul class="dropdown-menu">
+                            <li><a href="@Url.Action("Profile", "User")">Profile</a></li>
+                            <li><a href="@Url.Action("Logout", "User")">Logout</a></li>
+                        </ul>
+                    </li>
+                }
+            </ul>
+        </nav>
+    </header>
+    <main>
+        @RenderBody()
+    </main>
+    @RenderSection("Scripts", required: false)
+    <script>
+        $(document).ready(function () {
+            $('.hamburger').click(function (e) {
+                e.stopPropagation();
+                $(this).siblings('.dropdown-menu').toggleClass('show');
+            });
+
+            $(document).click(function (e) {
+                if (!$(e.target).closest('.hamburger-menu').length) {
+                    $('.dropdown-menu').removeClass('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
