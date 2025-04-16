@@ -7,102 +7,153 @@
 <style>
     .container {
         max-width: 800px;
-        margin: 40px auto;
-        padding: 30px;
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        border: 2px solid #ff6b6b;
+        margin: 20px auto;
+        padding: 0 20px 20px;
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        transition: box-shadow 0.3s ease;
+        position: relative;
     }
 
-    h2 {
-        color: #4ecdc4;
+        .container:hover {
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+        }
+
+    .profile-top {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 40px;
+        background: #374151;
+        border-radius: 4px 4px 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.2em;
+    }
+
+    .profile-picture {
+        position: absolute;
+        top: 50px;
+        right: 20px;
+        width: 70px;
+        height: 70px;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 3px solid #6b7280;
+        background: #ffffff;
+    }
+
+    .no-picture {
+        position: absolute;
+        top: 50px;
+        right: 20px;
+        width: 70px;
+        height: 70px;
+        border-radius: 8px;
+        background: #e5e7eb;
+        border: 3px dashed #9ca3af;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         text-align: center;
-        margin-bottom: 30px;
-        font-size: 2.5em;
-        text-transform: uppercase;
-        letter-spacing: 2px;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 500;
     }
 
     .profile-info {
-        font-size: 1.2em;
-        color: #333;
-        margin-bottom: 20px;
+        margin: 60px 0 15px;
+        display: flex;
+        align-items: center;
     }
 
         .profile-info label {
-            color: #ff9f1c;
             font-weight: 600;
-            margin-right: 10px;
+            color: #4b5563;
+            width: 100px;
+        }
+
+        .profile-info span {
+            color: #1f2937;
+            flex: 1;
         }
 
     .form-group {
-        margin-bottom: 25px;
+        margin-bottom: 15px;
     }
 
     .control-label {
-        color: #ff9f1c;
         font-weight: 600;
-        margin-bottom: 8px;
+        color: #4b5563;
         display: block;
-        font-size: 1.1em;
+        margin-bottom: 5px;
     }
 
     .form-control {
         width: 100%;
-        padding: 12px 15px;
-        border: 2px solid #95e1d3;
-        border-radius: 8px;
+        padding: 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        background: #f9fafb;
         font-size: 1em;
-        transition: all 0.3s ease;
-        background: #f8f9fa;
+        color: #374151;
     }
 
         .form-control:focus {
-            border-color: #ff6b6b;
+            border-color: #374151;
             outline: none;
-            box-shadow: 0 0 8px rgba(255, 107, 107, 0.3);
+            box-shadow: 0 0 5px rgba(55, 65, 81, 0.3);
         }
 
     .text-danger {
-        color: #ff3860 !important;
+        color: #ef4444;
         font-size: 0.9em;
         margin-top: 5px;
         display: block;
     }
 
+    .button-group {
+        display: flex;
+        justify-content: flex-start;
+        gap: 10px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+
     .btn {
-        padding: 12px 25px;
+        padding: 8px 15px;
         border: none;
-        border-radius: 25px;
-        font-size: 1.1em;
+        border-radius: 4px;
+        font-size: 0.9em;
+        font-weight: 500;
         cursor: pointer;
-        transition: all 0.3s ease;
-        margin-right: 10px;
+        transition: background 0.3s ease;
+        text-align: center;
+        min-width: 120px;
     }
 
     .btn-primary {
-        background: linear-gradient(45deg, #45b7d1, #4ecdc4);
-        color: white;
+        background: #ef4444;
+        color: #ffffff;
     }
 
         .btn-primary:hover {
-            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(69, 183, 209, 0.3);
+            background: #dc2626;
         }
 
     .btn-secondary {
-        background: linear-gradient(45deg, #ff9f1c, #ff6b6b);
-        color: white;
-        margin-top: 20px;
-        text-underline-offset;
+        background: #374151;
+        color: #ffffff;
     }
 
         .btn-secondary:hover {
-            background: linear-gradient(45deg, #ff6b6b, #ff9f1c);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            background: #4b5563;
         }
 
     .popup {
@@ -111,44 +162,46 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        padding: 15px;
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         z-index: 1000;
         min-width: 300px;
         text-align: center;
     }
 
         .popup.success {
-            background: #95e1d3;
-            border: 2px solid #52b788;
-            color: #2d6a4f;
+            background: #f9fafb;
+            border: 1px solid #374151;
+            color: #374151;
         }
 
         .popup.error {
-            background: #ff3860;
-            border: 2px solid #ff1c45;
-            color: white;
+            background: #fef2f2;
+            border: 1px solid #ef4444;
+            color: #ef4444;
         }
 
     .popup-content {
-        margin-bottom: 15px;
-        font-size: 1.2em;
+        margin-bottom: 10px;
+        font-size: 1.1em;
+        color: #1f2937;
     }
 
     .popup-close {
-        background: #fff;
-        color: #333;
+        background: #374151;
+        color: #ffffff;
         border: none;
         padding: 8px 15px;
-        border-radius: 20px;
+        border-radius: 4px;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: background 0.3s ease;
     }
 
         .popup-close:hover {
-            background: #ff6b6b;
-            color: white;
+            background: #4b5563;
         }
 
     .overlay {
@@ -164,29 +217,82 @@
 
     @@media (max-width: 768px) {
         .container {
-            margin: 20px;
-            padding: 20px;
+            margin: 10px;
+            padding: 0 15px 15px;
         }
 
-        h2 {
-            font-size: 2em;
+        .profile-top {
+            height: 35px;
+            font-size: 1em;
+        }
+
+        .profile-picture, .no-picture {
+            top: 45px;
+            right: 15px;
+            width: 50px;
+            height: 50px;
+            font-size: 10px;
+        }
+
+        .profile-info {
+            margin: 50px 0 15px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+
+            .profile-info label {
+                width: auto;
+            }
+
+        .form-control {
+            font-size: 0.9em;
+            padding: 8px;
+        }
+
+        .button-group {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
         }
 
         .btn {
-            width: 100%;
-            margin: 5px 0;
+            padding: 6px 12px;
+            font-size: 0.85em;
+            min-width: 100px;
+        }
+
+        .popup {
+            min-width: 250px;
+            padding: 10px;
+        }
+
+        .popup-content {
+            font-size: 1em;
         }
     }
 </style>
 
 <div class="container">
-    <h2>StudentERP Profile</h2>
+    <div class="profile-top">Your Profile</div>
+    @if (Model.HasProfilePicture)
+    {
+        <img src="/Images/@(Model.StudentId.ToString().ToUpper()).jpg" class="profile-picture" alt="Profile Picture" />
+    }
+    else
+    {
+        <div class="no-picture">No Picture</div>
+    }
     <div class="profile-info">
         <label>Email:</label>
         <span>@Model.StudentEmail</span>
     </div>
 
-    <button class="btn btn-secondary" id="showChangePassword">Change Password</button>
+    <div class="button-group">
+        <button class="btn btn-secondary" id="showChangePassword">Change Password</button>
+        <a href="@Url.Action("EditProfile", "User")" class="btn btn-primary">Edit Profile</a>
+        <a href="@Url.Action("Dashboard", "User")" class="btn btn-primary">Back to Dashboard</a>
+    </div>
 
     <form id="changePasswordForm" style="display: none;" method="post" asp-action="ChangePassword">
         @Html.AntiForgeryToken()
@@ -205,14 +311,10 @@
             <input type="password" id="NewPassword" name="NewPassword" class="form-control" placeholder="Enter new password" required />
             <span class="text-danger" id="newPasswordError"></span>
         </div>
-        <div class="form-group">
+        <div class="button-group">
             <input type="submit" value="Update Password" class="btn btn-primary" />
         </div>
     </form>
-    <a href="@Url.Action("EditProfile", "User")" class="btn btn-secondary">Edit Profile</a>
-    <a href="@Url.Action("Dashboard", "User")" class="btn btn-primary">Back to Dashboard</a>
-    
-
 </div>
 
 <div class="overlay" id="popupOverlay"></div>
@@ -282,4 +384,5 @@
             }
         });
     </script>
+}
 }

@@ -15,7 +15,6 @@ using MimeKit;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 
-
 namespace StudentERP.Controllers
 {
     public class UserController : Controller
@@ -32,7 +31,7 @@ namespace StudentERP.Controllers
             _configuration = configuration;
             _smtpSettings = smtpSettings.Value;
         }
-        //[Authorize]
+
         [HttpGet]
         public async Task<IActionResult> Dashboard()
         {
@@ -55,7 +54,7 @@ namespace StudentERP.Controllers
             var personalDetails = await _studentLoginRepository.GetPersonalDetails(student.StudentId);
             var contactDetails = await _studentLoginRepository.GetContactDetails(student.StudentId);
             var parentsDetails = await _studentLoginRepository.GetParentsDetails(student.StudentId);
-            var studentBatch = await _studentLoginRepository.GetStudentBatch(student.StudentId); // New method
+            var studentBatch = await _studentLoginRepository.GetStudentBatch(student.StudentId);
 
             var viewModel = new DashboardViewModel
             {
@@ -78,37 +77,10 @@ namespace StudentERP.Controllers
         [HttpGet]
         public IActionResult Register() => View();
 
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Register(StudentLogin model)
-        //{
-        //    if (!ModelState.IsValid)
-        //        return Json(new { success = false, message = "Validation failed" });
-
-        //    var existingStudent = await _studentLoginRepository.GetStudentByEmail(model.StudentMail);
-        //    if (existingStudent != null)
-        //        return Json(new { success = false, message = "Email already registered" });
-
-        //    var studentLogin = new StudentLogin
-        //    {
-        //        StudentMail = model.StudentMail,
-        //        HashPassword = model.HashPassword
-        //    };
-
-
-        //    var result = await _studentLoginRepository.RegisterStudent(studentLogin);
-        //    if (result)
-        //        return Json(new { success = true });
-
-        //    return Json(new { success = false, message = "Registration failed. Please try again." });
-        //}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(StudentLogin model, string fullname)
         {
-            //if (!ModelState.IsValid)
-            //    return Json(new { success = false, message = "Validation failed" });    // to be fixed...(tilak)
-
             var existingStudent = await _studentLoginRepository.GetStudentByEmail(model.StudentMail);
 
             if (existingStudent != null)
@@ -120,30 +92,70 @@ namespace StudentERP.Controllers
                 HashPassword = model.HashPassword
             };
 
-
-
-
-
             var result = await _studentLoginRepository.RegisterStudent(studentLogin);
             await SendWelcomeEmail(studentLogin.StudentMail, fullname);
             if (result)
                 return Json(new { success = true });
             return Json(new { success = false, message = "Registration failed. Please try again." });
         }
+
         private async Task SendWelcomeEmail(string toEmail, string fullName)
         {
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(_smtpSettings.FromName, _smtpSettings.FromEmail));
             message.To.Add(new MailboxAddress(fullName, toEmail));
-            message.Subject = "Welcome to StudentERP!";
+            message.Subject = "Welcome to StudentERP! Let's Get Started!";
 
             message.Body = new TextPart("html")
             {
-                Text = $"<h2>Hello {fullName},</h2>" +
-                       "<p>Welcome to StudentERP! Your account has been successfully created.</p>" +
-                       "<p>You can now log in using your email and password to access your dashboard.</p>" +
-                       "<p>Best regards,<br>StudentERP Team</p>"
+                Text = $@"<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <style>
+        body {{ font-family: 'Arial', sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; color: #374151; }}
+        .container {{ max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }}
+        .header {{ background: #374151; padding: 20px; text-align: center; color: #ffffff; }}
+        .header h1 {{ margin: 0; font-size: 24px; font-family: 'Permanent Marker', 'Arial', sans-serif; }}
+        .content {{ padding: 30px; line-height: 1.6; }}
+        .content h2 {{ color: #374151; font-size: 22px; margin-top: 0; }}
+        .content p {{ font-size: 16px; margin: 10px 0; color: #374151; }}
+        .cta-button {{ display: inline-block; padding: 12px 24px; margin: 20px 0; background: #ef4444; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: 600; font-size: 16px; }}
+        .cta-button:hover {{ background: #dc2626; }}
+        .footer {{ background: #f9fafb; padding: 15px; text-align: center; font-size: 14px; color: #4b5563; border-top: 1px solid #d1d5db; }}
+        .footer a {{ color: #ef4444; text-decoration: none; }}
+        @media (max-width: 600px) {{
+            .container {{ margin: 10px; }}
+            .header h1 {{ font-size: 20px; }}
+            .content {{ padding: 20px; }}
+            .content h2 {{ font-size: 18px; }}
+            .content p {{ font-size: 14px; }}
+            .cta-button {{ padding: 10px 20px; font-size: 14px; }}
+        }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>Welcome to StudentERP!</h1>
+        </div>
+        <div class='content'>
+            <h2>Hello {toEmail},</h2>
+            <p>Your journey with StudentERP starts now, and we’re thrilled to have you on board!</p>
+            <p>Your account is all set, opening the door to a seamless way to manage your academic world. Dive into your personalized dashboard to explore your courses, track progress, and more.</p>
+            
+            <p>Have questions? Our team is here to help you every step of the way.</p>
+            <p>Warm regards,<br>The StudentERP Team</p>
+        </div>
+        <div class='footer'>
+            <p>&copy; 2025 StudentERP | Contact Support</a></p>
+        </div>
+    </div>
+</body>
+</html>"
             };
+
             using (var client = new SmtpClient())
             {
                 try
@@ -155,15 +167,10 @@ namespace StudentERP.Controllers
                 }
                 catch (Exception ex)
                 {
-                    // Log the error (you might want to use ILogger here)
                     Console.WriteLine($"Failed to send email: {ex.Message}");
-                    // Optionally rethrow or handle silently
-                }
+                }
             }
         }
-
-
-
         [HttpGet]
         public IActionResult Login()
         {
@@ -186,7 +193,7 @@ namespace StudentERP.Controllers
             HttpContext.Session.SetString("StudentEmail", student.StudentMail);
             HttpContext.Session.SetString("StudentId", student.StudentId.ToString());
             var token = GenerateJwtToken(student);
-            
+
             return Json(new { success = true, token = token });
         }
 
@@ -231,7 +238,8 @@ namespace StudentERP.Controllers
             var viewModel = new ProfileViewModel
             {
                 StudentEmail = email,
-                HasProfilePicture = profile != null && !string.IsNullOrEmpty(profile.ProfilePictureName)
+                HasProfilePicture = profile != null && !string.IsNullOrEmpty(profile.ProfilePictureName),
+                StudentId = student.StudentId // Added
             };
             return View(viewModel);
         }
@@ -285,7 +293,6 @@ namespace StudentERP.Controllers
             };
             return View(viewModel);
         }
-
 
         [HttpGet]
         public async Task<IActionResult> CheckProfilePicture()
@@ -347,7 +354,6 @@ namespace StudentERP.Controllers
                     return Json(new { success = false, message = "Please select a file." });
                 }
 
-                // Validate filename
                 var expectedFileName = $"{student.StudentId.ToString().ToUpper()}.jpg";
                 if (profilePicture.FileName != expectedFileName)
                 {
@@ -355,10 +361,9 @@ namespace StudentERP.Controllers
                     return Json(new { success = false, message = $"Invalid filename. Please rename your file to '{expectedFileName}' and try again." });
                 }
 
-                var fileName = expectedFileName; // Already validated
+                var fileName = expectedFileName;
                 var filePath = Path.Combine(_environment.WebRootPath, "Images", fileName);
 
-                // Check if file exists and replacement not confirmed
                 var existingProfile = await _studentLoginRepository.GetStudentProfile(student.StudentId);
                 if (existingProfile != null && !string.IsNullOrEmpty(existingProfile.ProfilePictureName) && !replaceConfirmed)
                 {
@@ -369,7 +374,6 @@ namespace StudentERP.Controllers
                     }
                 }
 
-                // Save the file
                 Console.WriteLine($"WebRootPath: {_environment.WebRootPath}");
                 Console.WriteLine($"Saving file to: {filePath}");
                 Directory.CreateDirectory(Path.GetDirectoryName(filePath));
@@ -379,7 +383,6 @@ namespace StudentERP.Controllers
                     await profilePicture.CopyToAsync(fileStream);
                 }
 
-                // Save profile data to database
                 var profile = new StudentProfile
                 {
                     StudentId = student.StudentId,
@@ -412,7 +415,6 @@ namespace StudentERP.Controllers
         public string PhoneNumber { get; set; } = null!;
         public string FatherName { get; set; } = null!;
         public string ParentPhoneNumber { get; set; } = null!;
-
         public string? DegreeName { get; set; }
         public string? FieldName { get; set; }
         public string? CurrentSem { get; set; }
@@ -431,6 +433,7 @@ namespace StudentERP.Controllers
     {
         public string StudentEmail { get; set; } = null!;
         public bool HasProfilePicture { get; set; }
+        public Guid StudentId { get; set; } // Added
     }
 
     public class EditProfileViewModel
@@ -438,8 +441,4 @@ namespace StudentERP.Controllers
         public string StudentEmail { get; set; } = null!;
         public Guid StudentId { get; set; }
     }
-  
-    
-      
-    
 }

@@ -5,77 +5,157 @@
 }
 
 <style>
-    .container {
-        max-width: 800px;
-        margin: 40px auto;
-        padding: 20px;
-        border: 2px solid #ff6b6b;
-        border-radius: 10px;
-        background: white;
+    .editprofile-wrapper {
+        position: relative;
+        width: 100%;
+        background: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        padding: 20px 0;
+        min-height: 100vh; /* Full height like login */
     }
 
-    h2 {
-        color: #4ecdc4;
+    .editprofile-card {
+        width: 360px; /* Small like login/dashboard */
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        transition: box-shadow 0.3s ease;
+        font-family: 'Arial', sans-serif;
+    }
+
+        .editprofile-card:hover {
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+        }
+
+    .profile-top {
+        background: #374151;
+        color: #ffffff;
+        padding: 10px;
+        border-radius: 4px 4px 0 0;
         text-align: center;
-        margin-bottom: 20px;
+        font-size: 1.1em;
+        font-weight: 600;
+        margin: -15px -15px 15px;
     }
 
     .profile-info {
-        margin-bottom: 20px;
+        background: #f9fafb;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        padding: 8px;
+        margin-bottom: 12px;
+        display: grid;
+        grid-template-columns: 90px 1fr;
+        gap: 6px;
     }
 
         .profile-info label {
-            color: #ff9f1c;
-            font-weight: bold;
+            font-weight: 600;
+            color: #4b5563;
+            font-size: 0.85em;
+            align-self: center;
+        }
+
+        .profile-info span {
+            color: #1f2937;
+            font-size: 0.9em;
+            align-self: center;
+        }
+
+    .student-id {
+        background: #f9fafb;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        padding: 8px;
+        margin-bottom: 12px;
+        display: grid;
+        grid-template-columns: 90px 1fr;
+        gap: 6px;
+    }
+
+        .student-id label {
+            font-weight: 600;
+            color: #4b5563;
+            font-size: 0.85em;
+            align-self: center;
+        }
+
+        .student-id span {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 0.9em;
+            align-self: center;
+        }
+
+        .student-id p {
+            grid-column: 1 / -1;
+            font-size: 0.8em;
+            color: #6b7280;
+            margin: 5px 0 0;
         }
 
     .form-group {
-        margin-bottom: 20px;
+        margin-bottom: 12px;
     }
 
     .control-label {
-        color: #ff9f1c;
-        font-weight: bold;
+        font-weight: 600;
+        color: #4b5563;
+        display: block;
+        margin-bottom: 4px;
+        font-size: 0.85em;
     }
 
     .form-control {
         width: 100%;
-        padding: 10px;
-        border: 2px solid #95e1d3;
-        border-radius: 5px;
+        padding: 6px;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        background: #ffffff;
+        font-size: 0.9em;
+        color: #374151;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .form-control:focus {
+            border-color: #374151;
+            box-shadow: 0 0 4px rgba(55, 65, 81, 0.3);
+            outline: none;
+        }
+
+    .button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 12px;
     }
 
     .btn {
-        padding: 12px 25px;
+        padding: 6px 12px;
         border: none;
-        border-radius: 25px;
-        font-size: 1.1em;
+        border-radius: 4px;
+        font-size: 0.85em;
+        font-weight: 500;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: background 0.3s ease, transform 0.2s ease;
+        text-align: center;
+        width: 100%;
     }
 
     .btn-primary {
-        background: linear-gradient(45deg, #45b7d1, #4ecdc4);
-        color: white;
+        background: #ef4444;
+        color: #ffffff;
     }
 
         .btn-primary:hover {
-            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(69, 183, 209, 0.3);
-        }
-
-    .student-id {
-        margin-bottom: 20px;
-        padding: 10px;
-        background: #f8f9fa;
-        border: 1px dashed #ff6b6b;
-        border-radius: 5px;
-    }
-
-        .student-id span {
-            font-weight: bold;
-            color: #ff9f1c;
+            background: #dc2626;
+            transform: translateY(-1px);
         }
 
     .popup {
@@ -84,56 +164,56 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        padding: 12px;
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         z-index: 1000;
-        min-width: 300px;
+        min-width: 260px;
         text-align: center;
+        font-family: 'Arial', sans-serif;
     }
 
         .popup.success {
-            background: #95e1d3;
-            border: 2px solid #52b788;
-            color: #2d6a4f;
+            background: #f9fafb;
+            border: 1px solid #374151;
+            color: #374151;
         }
 
         .popup.error {
-            background: #ff3860;
-            border: 2px solid #ff1c45;
-            color: white;
+            background: #fef2f2;
+            border: 1px solid #ef4444;
+            color: #ef4444;
         }
 
         .popup.confirm {
-            background: #fff3e0;
-            border: 2px solid #ff9f1c;
-            color: #333;
+            background: #ffffff;
+            border: 1px solid #374151;
+            color: #374151;
         }
 
     .popup-content {
-        margin-bottom: 15px;
-        font-size: 1.2em;
+        margin-bottom: 8px;
+        font-size: 0.95em;
+        color: #1f2937;
     }
 
     .popup-close, .popup-confirm, .popup-cancel {
-        background: #fff;
-        color: #333;
+        background: #374151;
+        color: #ffffff;
         border: none;
-        padding: 8px 15px;
-        border-radius: 20px;
+        padding: 5px 10px;
+        border-radius: 4px;
         cursor: pointer;
-        transition: all 0.3s ease;
-        margin: 0 5px;
+        font-size: 0.8em;
+        margin: 0 4px;
+        transition: background 0.3s ease, transform 0.2s ease;
     }
 
-        .popup-close:hover, .popup-cancel:hover {
-            background: #ff6b6b;
-            color: white;
-        }
-
-        .popup-confirm:hover {
-            background: #4ecdc4;
-            color: white;
+        .popup-close:hover, .popup-confirm:hover, .popup-cancel:hover {
+            background: #4b5563;
+            transform: translateY(-1px);
         }
 
     .overlay {
@@ -143,11 +223,85 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 0.6);
         z-index: 999;
     }
-</style>
 
+    @@media (max-width: 768px) {
+        .editprofile-wrapper {
+            padding: 10px 0;
+        }
+
+        .editprofile-card {
+            width: 90%;
+            padding: 12px;
+            border-radius: 3px;
+        }
+
+        .profile-top {
+            font-size: 1em;
+            padding: 8px;
+            margin: -12px -12px 12px;
+        }
+
+        .profile-info, .student-id {
+            grid-template-columns: 80px 1fr;
+            padding: 6px;
+            margin-bottom: 10px;
+        }
+
+            .profile-info label, .student-id label {
+                font-size: 0.8em;
+            }
+
+            .profile-info span, .student-id span {
+                font-size: 0.85em;
+            }
+
+            .student-id p {
+                font-size: 0.75em;
+            }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .control-label {
+            font-size: 0.8em;
+            margin-bottom: 3px;
+        }
+
+        .form-control {
+            padding: 5px;
+            font-size: 0.85em;
+        }
+
+        .button-group {
+            gap: 6px;
+        }
+
+        .btn {
+            padding: 5px 10px;
+            font-size: 0.8em;
+        }
+
+        .popup {
+            min-width: 85%;
+            padding: 10px;
+            border-radius: 3px;
+        }
+
+        .popup-content {
+            font-size: 0.9em;
+            margin-bottom: 6px;
+        }
+
+        .popup-close, .popup-confirm, .popup-cancel {
+            padding: 4px 8px;
+            font-size: 0.75em;
+        }
+    }
+</style>
 <div class="container">
     <h2>Edit Profile</h2>
     <div class="profile-info">
