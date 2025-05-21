@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace StudentERP.Models;
 
@@ -23,6 +21,8 @@ public partial class StudentErpContext : DbContext
 
     public virtual DbSet<FieldName> FieldNames { get; set; }
 
+    public virtual DbSet<Otp> Otps { get; set; }
+
     public virtual DbSet<ParentsDetail> ParentsDetails { get; set; }
 
     public virtual DbSet<PersonalDetail> PersonalDetails { get; set; }
@@ -43,7 +43,7 @@ public partial class StudentErpContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=TILAK;Database=StudentERP;Integrated Security=True;TrustServerCertificate=True;");
+        => optionsBuilder.UseSqlServer("Server=TILAK; Database=StudentERP; Integrated Security=True; TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -126,6 +126,21 @@ public partial class StudentErpContext : DbContext
                 .HasForeignKey(d => d.Did)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__FieldName__DID__71D1E811");
+        });
+
+        modelBuilder.Entity<Otp>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Otps__3214EC07620556A6");
+
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
+            entity.Property(e => e.OtpCode).HasMaxLength(6);
+            entity.Property(e => e.StudentMail).HasMaxLength(255);
+
+            entity.HasOne(d => d.StudentMailNavigation).WithMany(p => p.Otps)
+                .HasPrincipalKey(p => p.StudentMail)
+                .HasForeignKey(d => d.StudentMail)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Otps_StudentLogins");
         });
 
         modelBuilder.Entity<ParentsDetail>(entity =>

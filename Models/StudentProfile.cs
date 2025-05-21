@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace StudentERP.Models;
+﻿namespace StudentERP.Models;
 
 public partial class StudentProfile
 {

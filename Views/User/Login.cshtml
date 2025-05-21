@@ -84,6 +84,8 @@
         background: #ef4444;
         color: #fff;
         font-family: 'Arial', sans-serif;
+        position: relative;
+        overflow: hidden;
     }
 
         .btn:hover {
@@ -91,9 +93,23 @@
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         }
 
+    .btn-secondary {
+        background: #6b7280;
+        margin-top: 10px;
+    }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+    .btn:disabled {
+        background: #d1d5db;
+        cursor: not-allowed;
+    }
+
     .nav-link {
         color: #374151;
-        text-decoration: none;
+        text Lai to: none;
         font-size: 0.9em;
         font-family: 'Arial', sans-serif;
         display: inline-block;
@@ -106,7 +122,6 @@
             text-decoration: underline;
         }
 
-    /* Popup Styling */
     .popup {
         display: none;
         position: fixed;
@@ -166,7 +181,6 @@
         z-index: 999;
     }
 
-    /* Unique Loading Indicator */
     .loading-marker {
         display: none;
         position: absolute;
@@ -211,6 +225,74 @@
             left: 10px;
             animation-delay: 0.6s;
         }
+
+    .timer {
+        text-align: center;
+        margin: 10px 0;
+        color: #374151;
+        font-size: 0.9em;
+        font-family: 'Arial', sans-serif;
+    }
+
+    /* Thanos Snap Animation */
+    .snap-effect {
+        position: relative;
+        animation: snap 1.5s ease-out forwards;
+    }
+
+        .snap-effect::before,
+        .snap-effect::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ef4444;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: particle 1.5s ease-out forwards;
+        }
+
+        .snap-effect::before {
+            top: 10%;
+            left: 20%;
+            animation-delay: 0.1s;
+        }
+
+        .snap-effect::after {
+            bottom: 15%;
+            right: 25%;
+            background: #374151;
+            animation-delay: 0.3s;
+        }
+
+    @@keyframes snap {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        50% {
+            transform: scale(0.8);
+            opacity: 0.5;
+        }
+
+        100% {
+            transform: scale(0);
+            opacity: 0;
+        }
+    }
+
+    @@keyframes particle {
+        0% {
+            transform: translate(0, 0);
+            opacity: 0.8;
+        }
+
+        100% {
+            transform: translate(calc(50px * var(--direction-x)), calc(50px * var(--direction-y)));
+            opacity: 0;
+        }
+    }
 
     @@keyframes sketch {
         0% {
@@ -266,6 +348,10 @@
             padding: 12px;
         }
 
+        .timer {
+            font-size: 0.85em;
+        }
+
         .loading-marker {
             width: 32px;
             height: 32px;
@@ -295,6 +381,12 @@
                 top: 24px;
                 left: 8px;
             }
+
+        .snap-effect::before,
+        .snap-effect::after {
+            width: 8px;
+            height: 8px;
+        }
     }
 </style>
 
@@ -316,8 +408,26 @@
             <span asp-validation-for="HashPassword" class="text-danger"></span>
         </div>
 
+        <div class="form-group" id="otpGroup" style="display: none;">
+            <label class="control-label">OTP</label>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <input type="text" class="otp-input form-control" maxlength="1" data-index="1" style="width: 40px; text-align: center;" />
+                <input type="text" class="otp-input form-control" maxlength="1" data-index="2" style="width: 40px; text-align: center;" />
+                <input type="text" class="otp-input form-control" maxlength="1" data-index="3" style="width: 40px; text-align: center;" />
+                <input type="text" class="otp-input form-control" maxlength="1" data-index="4" style="width: 40px; text-align: center;" />
+                <input type="text" class="otp-input form-control" maxlength="1" data-index="5" style="width: 40px; text-align: center;" />
+                <input type="text" class="otp-input form-control" maxlength="1" data-index="6" style="width: 40px; text-align: center;" />
+            </div>
+            <input type="hidden" id="otpCode" name="otpCode" />
+            <span id="otpError" class="text-danger"></span>
+            <div class="timer" id="otp-timer"></div>
+        </div>
+
         <div class="form-group">
-            <input type="submit" value="Login" class="btn btn-primary" />
+            <input type="submit" id="loginButton" value="Login" class="btn btn-primary" />
+            <button type="button" id="sendOtpButton" class="btn btn-secondary" style="display: none;">Send OTP</button>
+            <button type="button" id="verifyOtpButton" class="btn btn-primary" style="display: none;">Verify OTP</button>
+            <button type="button" id="resendOtpButton" class="btn btn-secondary" style="display: none;" disabled>Resend OTP</button>
         </div>
 
         <div class="form-group">
@@ -333,7 +443,6 @@
     </form>
 </div>
 
-<!-- Popup and Overlay -->
 <div class="overlay" id="popupOverlay"></div>
 <div class="popup" id="popup">
     <div class="popup-content" id="popupMessage"></div>
@@ -344,45 +453,68 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         $(document).ready(function () {
-            $("#loginForm").submit(function (e) {
-                e.preventDefault();
+            let isOtpSent = false;
+            let timerInterval;
+            const otpValiditySeconds = 150; 
 
-                // Show loading marker
-                $("#loadingSpinner").show();
+           
+            $(document).on('input', '.otp-input', function () {
+                const index = parseInt($(this).data('index'));
+                const value = $(this).val();
 
-                $.ajax({
-                    url: '@Url.Action("Login", "User")',
-                    type: 'POST',
-                    data: $(this).serialize(),
-                    success: function (response) {
-                        // Hide loading marker
-                        $("#loadingSpinner").hide();
-
-                        if (response.success) {
-                            console.log("JWT Token: " + response.token);
-                            showPopup("Login successful! Redirecting to dashboard...", "success");
-                            setTimeout(function () {
-                                window.location.href = '@Url.Action("Dashboard", "User")';
-                            }, 2000);
-                        } else {
-                            showPopup(response.message || "Invalid email, password, or inactive account", "error");
-                        }
-                    },
-                    error: function () {
-                        // Hide loading marker
-                        $("#loadingSpinner").hide();
-                        showPopup("An error occurred. Please try again.", "error");
+                if (value.length === 1) {
+                    if (index < 6) {
+                        $(`.otp-input[data-index=${index + 1}]`).focus();
                     }
+                }
+
+                updateCombinedOtp();
+            });
+
+            $(document).on('keydown', '.otp-input', function (e) {
+                const index = parseInt($(this).data('index'));
+
+                if (e.key === 'Backspace' && $(this).val() === '' && index > 1) {
+                    $(`.otp-input[data-index=${index - 1}]`).focus();
+                }
+            });
+
+            function updateCombinedOtp() {
+                let otp = '';
+                $('.otp-input').each(function () {
+                    otp += $(this).val();
                 });
-            });
+                $('#otpCode').val(otp);
+            }
 
-            $("#popupClose").click(function () {
-                hidePopup();
-            });
+            function startTimer() {
+                let timeLeft = otpValiditySeconds;
+                $("#otp-timer").text(`OTP valid for ${formatTime(timeLeft)}`);
+                $("#sendOtpButton").prop("disabled", true).hide();
+                $("#resendOtpButton").prop("disabled", true).hide();
+                $("#otpGroup").show();
 
-            $("#popupOverlay").click(function () {
-                hidePopup();
-            });
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    $("#otp-timer").text(`OTP valid for ${formatTime(timeLeft)}`);
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        $("#otp-timer").text("OTP has expired");
+                        $("#sendOtpButton").prop("disabled", true).hide();
+                        $("#verifyOtpButton").addClass("snap-effect");
+                        setTimeout(() => {
+                            $("#verifyOtpButton").hide().removeClass("snap-effect");
+                        }, 1500); 
+                        $("#resendOtpButton").prop("disabled", false).show();
+                    }
+                }, 1000);
+            }
+
+            function formatTime(seconds) {
+                const minutes = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
 
             function showPopup(message, type) {
                 $("#popupMessage").text(message);
@@ -394,6 +526,119 @@
                 $("#popup").hide();
                 $("#popupOverlay").hide();
             }
+
+            $("#loginForm").submit(function (e) {
+                e.preventDefault();
+                $("#loadingSpinner").show();
+
+                const formData = $(this).serialize();
+                const action = isOtpSent ? "verifyOtp" : null;
+                const otpCode = $("#otpCode").val();
+
+                $.ajax({
+                    url: '@Url.Action("Login", "User")',
+                    type: 'POST',
+                    data: formData + (action ? "&action=" + action + "&otpCode=" + otpCode : ""),
+                    success: function (response) {
+                        $("#loadingSpinner").hide();
+
+                        if (response.success && response.requiresOtp) {
+                            $("#loginButton").hide();
+                            $("#sendOtpButton").show();
+                            showPopup("Please request an OTP to proceed.", "success");
+                        } else if (response.success && action === "sendOtp") {
+                            isOtpSent = true;
+                            $("#sendOtpButton").hide();
+                            $("#otpGroup").show();
+                            $("#verifyOtpButton").show();
+                            showPopup(response.message, "success");
+                            startTimer();
+                        } else if (response.success && response.redirectUrl) {
+                            console.log("JWT Token: " + response.token);
+                            clearInterval(timerInterval);
+                            showPopup("Login successful! Redirecting to dashboard...", "success");
+                            setTimeout(function () {
+                                window.location.href = response.redirectUrl;
+                            }, 2000);
+                        } else {
+                            showPopup(response.message || "Invalid email, password, or OTP", "error");
+                        }
+                    },
+                    error: function () {
+                        $("#loadingSpinner").hide();
+                        showPopup("An error occurred. Please try again.", "error");
+                    }
+                });
+            });
+
+            $("#sendOtpButton").click(function () {
+                $("#loadingSpinner").show();
+                const formData = $("#loginForm").serialize();
+
+                $.ajax({
+                    url: '@Url.Action("Login", "User")',
+                    type: 'POST',
+                    data: formData + "&action=sendOtp",
+                    success: function (response) {
+                        $("#loadingSpinner").hide();
+                        if (response.success) {
+                            isOtpSent = true;
+                            $("#sendOtpButton").hide();
+                            $("#otpGroup").show();
+                            $("#verifyOtpButton").show();
+                            showPopup(response.message, "success");
+                            startTimer();
+                        } else {
+                            showPopup(response.message, "error");
+                        }
+                    },
+                    error: function () {
+                        $("#loadingSpinner").hide();
+                        showPopup("Failed to send OTP. Please try again.", "error");
+                    }
+                });
+            });
+
+            $("#verifyOtpButton").click(function () {
+                $("#loginForm").submit();
+            });
+
+            $("#resendOtpButton").click(function () {
+                $("#loadingSpinner").show();
+                const formData = $("#loginForm").serialize();
+
+                $.ajax({
+                    url: '@Url.Action("Login", "User")',
+                    type: 'POST',
+                    data: formData + "&action=sendOtp",
+                    success: function (response) {
+                        $("#loadingSpinner").hide();
+                        if (response.success) {
+                            isOtpSent = true;
+                            $("#otpGroup").show();
+                            $("#verifyOtpButton").show().removeClass("snap-effect");
+                            $('.otp-input').val(''); // Clear OTP inputs
+                            $("#otpCode").val('');
+                            showPopup(response.message, "success");
+                            startTimer();
+                        } else {
+                            showPopup(response.message, "error");
+                        }
+                    },
+                    error: function () {
+                        $("#loadingSpinner").hide();
+                        showPopup("Failed to resend OTP. Please try again.", "error");
+                    }
+                });
+            });
+
+            $("#popupClose").click(function () {
+                hidePopup();
+            });
+
+            $("#popupOverlay").click(function () {
+                hidePopup();
+            });
         });
     </script>
 }

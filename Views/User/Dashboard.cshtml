@@ -2,12 +2,27 @@
 
 @{
     ViewData["Title"] = "Dashboard";
+
+    // Helper method to extract semester number (e.g., "8" from "D1F1S8")
+    string GetSemesterNumber(string semId)
+    {
+        if (string.IsNullOrEmpty(semId) || !semId.Contains("S"))
+            return semId;
+        return semId.Split('S').Last();
+    }
+
+    // Get current semester index and adjacent semesters
+    var semesters = Model.AvailableSemesters.OrderBy(s => s).ToList();
+    var currentIndex = semesters.IndexOf(Model.DisplaySem);
+    var prevSem = currentIndex > 0 ? semesters[currentIndex - 1] : null;
+    var nextSem = currentIndex < semesters.Count - 1 && Model.DisplaySem != Model.CurrentSem ? semesters[currentIndex + 1] : null;
 }
 
 <style>
     .dashboard-wrapper {
         position: relative;
         width: 100%;
+        box-sizing: border-box;
     }
 
     .welcome-banner {
@@ -26,12 +41,15 @@
         animation: marquee 20s linear infinite;
     }
 
+        .banner-container:hover {
+            animation-play-state: paused;
+        }
+
     .banner-text {
         display: inline-block;
         font-size: 1.2em;
         font-weight: 500;
-        padding-right: 100px;
-        margin-right: 1175px;
+        padding-right: 50px;
     }
 
     @@keyframes marquee {
@@ -45,13 +63,14 @@
     }
 
     .dashboard-container {
-        max-width: 1000px;
-        margin: 10px 0 0 10px;
-        padding: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0 15px;
         display: flex;
-        flex-wrap: wrap;
-        justify-content: flex-start;
+        flex-wrap: nowrap; /* Prevent wrapping on desktop */
+        align-items: flex-start;
         gap: 20px;
+        box-sizing: border-box;
     }
 
     .id-card {
@@ -67,6 +86,7 @@
         align-items: center;
         position: relative;
         transition: box-shadow 0.3s ease;
+        flex-shrink: 0; /* Prevent ID card from shrinking */
     }
 
         .id-card:hover {
@@ -185,8 +205,9 @@
         }
 
     .academic-table-container {
-        flex: 1;
-        width: 450px;
+        flex-grow: 1; /* Take all remaining space */
+        width: 100%;
+        min-width: 0; /* Prevent flex overflow */
     }
 
     .academic-table {
@@ -211,12 +232,24 @@
             font-weight: 600;
         }
 
+        .academic-table tr:nth-child(odd) {
+            background: #ffffff;
+        }
+
         .academic-table tr:nth-child(even) {
-            background: #f9fafb;
+            background: #f3f4f6;
+        }
+
+        .academic-table tr.current-semester {
+            background: #e5e7eb;
         }
 
         .academic-table tr:hover {
             background: #f3f4f6;
+        }
+
+        .academic-table tr.current-semester:hover {
+            background: #d1d5db;
         }
 
     .download-btn {
@@ -239,16 +272,25 @@
             cursor: not-allowed;
         }
 
-    .sem-nav-container {
+    .pagination-container {
         margin-top: 15px;
         display: flex;
-        justify-content: flex-end;
+        flex-direction: column;
+        align-items: flex-end;
         gap: 10px;
     }
 
-    .sem-btn {
+    .pagination-numbers {
         display: flex;
-        align-items: center;
+        gap: 8px;
+    }
+
+    .pagination-arrows {
+        display: flex;
+        gap: 8px;
+    }
+
+    .pagination-btn {
         background: #374151;
         color: #ffffff;
         padding: 8px 12px;
@@ -260,32 +302,30 @@
         transition: background 0.3s ease;
     }
 
-        .sem-btn:hover:not(:disabled) {
+        .pagination-btn:hover:not(:disabled) {
             background: #4b5563;
         }
 
-        .sem-btn:disabled {
+        .pagination-btn.active {
+            background: #ef4444;
+        }
+
+        .pagination-btn:disabled {
             background: #9ca3af;
             cursor: not-allowed;
         }
 
-        .sem-btn.prev::before {
-            content: '\2190';
-            margin-right: 6px;
-            font-size: 1em;
-        }
-
-        .sem-btn.next::after {
-            content: '\2192';
-            margin-left: 6px;
-            font-size: 1em;
+        .pagination-btn.arrow {
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
     @@media (max-width: 768px) {
         .dashboard-container {
-            margin: 10px auto;
             padding: 0;
-            flex-direction: column;
+            flex-direction: column; /* Stack vertically on mobile */
             align-items: center;
         }
 
@@ -334,21 +374,29 @@
 
         .banner-text {
             font-size: 1em;
-            padding-right: 50px;
+            padding-right: 30px;
         }
 
         .banner-container {
             animation: marquee 15s linear infinite;
         }
 
-        .sem-nav-container {
-            justify-content: center;
+            .banner-container:hover {
+                animation-play-state: paused;
+            }
+
+        .pagination-container {
+            align-items: center;
         }
 
-        .sem-btn {
+        .pagination-btn {
             padding: 6px 10px;
             font-size: 0.85em;
         }
+
+            .pagination-btn.arrow {
+                padding: 6px 10px;
+            }
     }
 </style>
 
@@ -369,18 +417,18 @@
             <div class="id-card-top">Student ID</div>
             @if (!string.IsNullOrEmpty(Model.ProfilePictureName))
             {
-                <img src="~/Images/@Model.ProfilePictureName" alt="Profile Picture" class="profile-picture" />
+                <img src="~/Images/@Model.ProfilePictureName" alt="Profile Picture" class="profile-picture" onerror="this.src='/Images/placeholder.jpg'" />
             }
             else
             {
                 <div class="no-picture">No Profile Picture</div>
             }
             <div class="id-info">
-                <div class="full-name">@Model.FullName</div>
-                <p><span class="label">Phone:</span> @Model.PhoneNumber</p>
-                <p><span class="label">Father's Name:</span> @Model.FatherName</p>
-                <p><span class="label">Parent's Phone:</span> @Model.ParentPhoneNumber</p>
-                <p><span class="label">Email:</span> @Model.StudentEmail</p>
+                <div class="full-name">@(Model.FullName ?? "No Data Available")</div>
+                <p><span class="label">Phone:</span> @(Model.PhoneNumber ?? "No Data Available")</p>
+                <p><span class="label">Father's Name:</span> @(Model.FatherName ?? "No Data Available")</p>
+                <p><span class="label">Parent's Phone:</span> @(Model.ParentPhoneNumber ?? "No Data Available")</p>
+                <p><span class="label">Email:</span> @(Model.StudentEmail ?? "No Data Available")</p>
             </div>
         </div>
 
@@ -389,21 +437,21 @@
             <table class="academic-table">
                 <thead>
                     <tr>
-                        <th colspan="4">Academic Details</th>
+                        <th colspan="4">Academic Details (Semester: @GetSemesterNumber(Model.DisplaySem))</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td><strong>Degree:</strong></td>
-                        <td colspan="3">@Model.DegreeName</td>
+                        <td colspan="3">@(Model.DegreeName ?? "N/A")</td>
                     </tr>
                     <tr>
                         <td><strong>Field:</strong></td>
-                        <td colspan="3">@Model.FieldName</td>
+                        <td colspan="3">@(Model.FieldName ?? "N/A")</td>
                     </tr>
                     <tr>
                         <td><strong>Current Semester:</strong></td>
-                        <td colspan="3">@Model.CurrentSem</td>
+                        <td colspan="3">@GetSemesterNumber(Model.CurrentSem)</td>
                     </tr>
                     <tr>
                         <th>Subject Name</th>
@@ -415,7 +463,7 @@
                     {
                         foreach (var subject in Model.Subjects)
                         {
-                            <tr>
+                            <tr class="@(Model.DisplaySem == Model.CurrentSem ? "current-semester" : "")">
                                 <td>@subject.SubjectName</td>
                                 <td>@subject.SubjectCode</td>
                                 <td>@subject.SubjectCredit</td>
@@ -440,25 +488,42 @@
                     }
                 </tbody>
             </table>
-            <!-- Semester Navigation Buttons -->
-            @{
-                // Extract semester number (e.g., "8" from "D1F1S8")
-                var semNumberStr = Model.CurrentSem.Substring(Model.CurrentSem.Length - 1);
-                int semNumber;
-                bool isValidSem = int.TryParse(semNumberStr, out semNumber);
-                // Calculate previous and next semester strings
-                var prevSem = isValidSem && semNumber > 1 ? Model.CurrentSem.Substring(0, Model.CurrentSem.Length - 1) + (semNumber - 1) : "";
-                var nextSem = isValidSem && semNumber < 8 ? Model.CurrentSem.Substring(0, Model.CurrentSem.Length - 1) + (semNumber + 1) : "";
-            }
-            <div class="sem-nav-container">
-                <form asp-action="Dashboard" method="get">
-                    <input type="hidden" name="semester" value="@prevSem" />
-                    <button type="submit" class="sem-btn prev" @(string.IsNullOrEmpty(prevSem) ? "disabled" : "")>Previous Semester</button>
-                </form>
-                <form asp-action="Dashboard" method="get">
-                    <input type="hidden" name="semester" value="@nextSem" />
-                    <button type="submit" class="sem-btn next" @(string.IsNullOrEmpty(nextSem) ? "disabled" : "")>Next Semester</button>
-                </form>
+            <!-- Semester Pagination -->
+            <div class="pagination-container">
+                @if (Model.AvailableSemesters.Any())
+                {
+                    <!-- Numbered Buttons -->
+                    <div class="pagination-numbers">
+                        @foreach (var sem in semesters)
+                        {
+                            <form asp-action="Dashboard" method="get">
+                                <input type="hidden" name="semester" value="@sem" />
+                                <button type="submit" class="pagination-btn @(Model.DisplaySem == sem ? "active" : "")">
+                                    @GetSemesterNumber(sem)
+                                </button>
+                            </form>
+                        }
+                    </div>
+                    <!-- Arrow Buttons -->
+                    <div class="pagination-arrows">
+                        <form asp-action="Dashboard" method="get">
+                            <input type="hidden" name="semester" value="@prevSem" />
+                            <button type="submit" class="pagination-btn arrow" @(prevSem == null ? "disabled" : "")>
+                                <span>← Previous</span>
+                            </button>
+                        </form>
+                        <form asp-action="Dashboard" method="get">
+                            <input type="hidden" name="semester" value="@nextSem" />
+                            <button type="submit" class="pagination-btn arrow" @(nextSem == null ? "disabled" : "")>
+                                <span>Next →</span>
+                            </button>
+                        </form>
+                    </div>
+                }
+                else
+                {
+                    <span style="color: #9ca3af;">No semesters available</span>
+                }
             </div>
         </div>
     </div>

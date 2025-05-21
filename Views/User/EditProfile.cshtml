@@ -5,18 +5,19 @@
 }
 
 <style>
-    .editprofile-wrapper {
-        position: relative;
+    .wrapper {
         width: 100%;
         background: #f4f4f4;
         display: flex;
         justify-content: center;
         padding: 20px 0;
-        min-height: 100vh; /* Full height like login */
+        min-height: 100vh;
+        font-family: 'Arial', sans-serif;
     }
 
-    .editprofile-card {
-        width: 360px; /* Small like login/dashboard */
+    .card {
+        width: 675px;
+        height: 400px;
         background: #ffffff;
         border: 1px solid #d1d5db;
         border-radius: 4px;
@@ -26,98 +27,129 @@
         flex-direction: column;
         align-items: stretch;
         transition: box-shadow 0.3s ease;
-        font-family: 'Arial', sans-serif;
     }
 
-        .editprofile-card:hover {
+        .card:hover {
             box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
         }
 
-    .profile-top {
+    .card-header {
+        height: 40px;
         background: #374151;
-        color: #ffffff;
-        padding: 10px;
         border-radius: 4px 4px 0 0;
-        text-align: center;
-        font-size: 1.1em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
         font-weight: 600;
+        font-size: 1.2em;
         margin: -15px -15px 15px;
     }
 
-    .profile-info {
+    .profile-picture {
+        width: 70px;
+        height: 70px;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 3px solid #6b7280;
+        background: #ffffff;
+        margin: 10px auto;
+    }
+
+    .no-picture {
+        width: 70px;
+        height: 70px;
+        border-radius: 8px;
+        background: #e5e7eb;
+        border: 3px dashed #9ca3af;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 500;
+        margin: 10px auto;
+    }
+
+    .info-section {
+        display: flex;
+        align-items: center;
         background: #f9fafb;
         border: 1px solid #d1d5db;
         border-radius: 4px;
-        padding: 8px;
-        margin-bottom: 12px;
-        display: grid;
-        grid-template-columns: 90px 1fr;
-        gap: 6px;
+        padding: 10px;
+        margin-bottom: 10px;
     }
 
-        .profile-info label {
+        .info-section label {
             font-weight: 600;
             color: #4b5563;
-            font-size: 0.85em;
-            align-self: center;
-        }
-
-        .profile-info span {
-            color: #1f2937;
+            width: 150px;
             font-size: 0.9em;
-            align-self: center;
         }
 
-    .student-id {
+        .info-section span {
+            color: #1f2937;
+            flex: 1;
+            font-size: 0.9em;
+        }
+
+    .id-section {
+        display: flex;
+        align-items: center;
         background: #f9fafb;
         border: 1px solid #d1d5db;
         border-radius: 4px;
-        padding: 8px;
-        margin-bottom: 12px;
-        display: grid;
-        grid-template-columns: 90px 1fr;
-        gap: 6px;
+        padding: 10px;
+        margin-bottom: 10px;
     }
 
-        .student-id label {
+        .id-section label {
             font-weight: 600;
             color: #4b5563;
-            font-size: 0.85em;
-            align-self: center;
+            width: 150px;
+            font-size: 0.9em;
         }
 
-        .student-id span {
+        .id-section span {
             font-weight: 600;
             color: #1f2937;
+            flex: 1;
             font-size: 0.9em;
-            align-self: center;
         }
 
-        .student-id p {
-            grid-column: 1 / -1;
-            font-size: 0.8em;
-            color: #6b7280;
-            margin: 5px 0 0;
-        }
+    .instruction-section {
+        background: #f9fafb;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        padding: 10px;
+        padding-left: 160px;
+        margin-bottom: 10px;
+        font-size: 0.8em;
+        color: #6b7280;
+    }
 
     .form-group {
-        margin-bottom: 12px;
+        margin-bottom: 10px;
+        flex-grow: 1;
     }
 
     .control-label {
         font-weight: 600;
         color: #4b5563;
         display: block;
-        margin-bottom: 4px;
-        font-size: 0.85em;
+        margin-bottom: 5px;
+        font-size: 0.9em;
     }
 
     .form-control {
         width: 100%;
-        padding: 6px;
+        max-width: 600px;
+        padding: 10px;
         border: 1px solid #d1d5db;
         border-radius: 4px;
-        background: #ffffff;
+        background: #f9fafb;
         font-size: 0.9em;
         color: #374151;
         transition: border-color 0.3s ease, box-shadow 0.3s ease;
@@ -125,27 +157,29 @@
 
         .form-control:focus {
             border-color: #374151;
-            box-shadow: 0 0 4px rgba(55, 65, 81, 0.3);
+            box-shadow: 0 0 5px rgba(55, 65, 81, 0.3);
             outline: none;
         }
 
     .button-group {
         display: flex;
-        flex-direction: column;
-        gap: 8px;
-        margin-top: 12px;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        gap: 10px;
+        margin-top: 10px;
     }
 
     .btn {
-        padding: 6px 12px;
+        padding: 8px 15px;
         border: none;
         border-radius: 4px;
-        font-size: 0.85em;
+        font-size: 0.9em;
         font-weight: 500;
         cursor: pointer;
-        transition: background 0.3s ease, transform 0.2s ease;
+        transition: background 0.3s ease;
         text-align: center;
-        width: 100%;
+        min-width: 120px;
     }
 
     .btn-primary {
@@ -155,7 +189,6 @@
 
         .btn-primary:hover {
             background: #dc2626;
-            transform: translateY(-1px);
         }
 
     .popup {
@@ -164,15 +197,14 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        padding: 12px;
+        padding: 15px;
         background: #ffffff;
         border: 1px solid #d1d5db;
         border-radius: 4px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         z-index: 1000;
-        min-width: 260px;
+        min-width: 300px;
         text-align: center;
-        font-family: 'Arial', sans-serif;
     }
 
         .popup.success {
@@ -194,8 +226,8 @@
         }
 
     .popup-content {
-        margin-bottom: 8px;
-        font-size: 0.95em;
+        margin-bottom: 10px;
+        font-size: 1.1em;
         color: #1f2937;
     }
 
@@ -203,17 +235,16 @@
         background: #374151;
         color: #ffffff;
         border: none;
-        padding: 5px 10px;
+        padding: 8px 15px;
         border-radius: 4px;
         cursor: pointer;
-        font-size: 0.8em;
-        margin: 0 4px;
-        transition: background 0.3s ease, transform 0.2s ease;
+        font-size: 0.9em;
+        margin: 0 5px;
+        transition: background 0.3s ease;
     }
 
         .popup-close:hover, .popup-confirm:hover, .popup-cancel:hover {
             background: #4b5563;
-            transform: translateY(-1px);
         }
 
     .overlay {
@@ -228,102 +259,147 @@
     }
 
     @@media (max-width: 768px) {
-        .editprofile-wrapper {
-            padding: 10px 0;
-        }
+        .wrapper
 
-        .editprofile-card {
-            width: 90%;
-            padding: 12px;
-            border-radius: 3px;
-        }
+    {
+        padding: 10px 0;
+    }
 
-        .profile-top {
-            font-size: 1em;
-            padding: 8px;
-            margin: -12px -12px 12px;
-        }
+    .card {
+        width: 90%;
+        height: auto;
+        padding: 10px;
+        border-radius: 3px;
+    }
 
-        .profile-info, .student-id {
-            grid-template-columns: 80px 1fr;
-            padding: 6px;
-            margin-bottom: 10px;
-        }
+    .card-header {
+        height: 35px;
+        font-size: 1em;
+        margin: -10px -10px 10px;
+    }
 
-            .profile-info label, .student-id label {
-                font-size: 0.8em;
-            }
+    .profile-picture, .no-picture {
+        width: 50px;
+        height: 50px;
+        font-size: 10px;
+        margin: 8px auto;
+    }
 
-            .profile-info span, .student-id span {
-                font-size: 0.85em;
-            }
+    .info-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+        padding: 8px;
+        margin-bottom: 8px;
+    }
 
-            .student-id p {
-                font-size: 0.75em;
-            }
-
-        .form-group {
-            margin-bottom: 10px;
-        }
-
-        .control-label {
-            font-size: 0.8em;
-            margin-bottom: 3px;
-        }
-
-        .form-control {
-            padding: 5px;
+        .info-section label {
+            width: auto;
             font-size: 0.85em;
         }
 
-        .button-group {
-            gap: 6px;
+        .info-section span {
+            font-size: 0.85em;
         }
 
-        .btn {
-            padding: 5px 10px;
-            font-size: 0.8em;
+    .id-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+        padding: 8px;
+        margin-bottom: 8px;
+    }
+
+        .id-section label {
+            width: auto;
+            font-size: 0.85em;
         }
 
-        .popup {
-            min-width: 85%;
-            padding: 10px;
-            border-radius: 3px;
+        .id-section span {
+            font-size: 0.85em;
         }
 
-        .popup-content {
-            font-size: 0.9em;
-            margin-bottom: 6px;
-        }
+    .instruction-section {
+        padding: 8px;
+        padding-left: 8px;
+        font-size: 0.75em;
+        margin-bottom: 8px;
+    }
 
-        .popup-close, .popup-confirm, .popup-cancel {
-            padding: 4px 8px;
-            font-size: 0.75em;
-        }
+    .form-group {
+        margin-bottom: 8px;
+    }
+
+    .control-label {
+        font-size: 0.85em;
+        margin-bottom: 4px;
+    }
+
+    .form-control {
+        max-width: 100%;
+        padding: 8px;
+        font-size: 0.85em;
+    }
+
+    .button-group {
+        flex-direction: column;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .btn {
+        padding: 6px 12px;
+        font-size: 0.85em;
+        min-width: 100px;
+    }
+
+    .popup {
+        min-width: 85%;
+        padding: 10px;
+        border-radius: 3px;
+    }
+
+    .popup-content {
+        font-size: 1em;
+        margin-bottom: 8px;
+    }
+
+    .popup-close, .popup-confirm, .popup-cancel {
+        padding: 6px 12px;
+        font-size: 0.85em;
+    }
+
     }
 </style>
-<div class="container">
-    <h2>Edit Profile</h2>
-    <div class="profile-info">
-        <label>Email:</label> <span>@Model.StudentEmail</span>
-    </div>
-    <div class="student-id">
-        <label>Your Student ID:</label> <span>@Model.StudentId.ToString().ToUpper()</span>
-        <p>Please rename your image file to match this ID (e.g., @Model.StudentId.ToString().ToUpper() + ".jpg") before uploading.</p>
-    </div>
 
-    <form id="editProfileForm" enctype="multipart/form-data">
-        @Html.AntiForgeryToken()
-        <div class="form-group">
-            <label for="profilePicture" class="control-label">Profile Picture</label>
-            <input type="file" id="profilePicture" name="profilePicture" class="form-control" accept="image/*" required />
+<div class="wrapper">
+    <div class="card">
+        <div class="card-header">Edit Profile</div>
+        <div class="info-section">
+            <label>Email:</label> <span>@Model.StudentEmail</span>
         </div>
-        <div class="form-group">
-            <button type="submit" id="uploadButton" class="btn btn-primary">Upload</button>
+        <div class="id-section">
+            <label>Your Student ID:</label>
+            <span>@Model.StudentId.ToString().ToUpper()</span>
         </div>
-    </form>
+        <div class="id-section">
+            <label>Input Guide:</label>
+            Please rename your image file to match this ID (e.g., @Model.StudentId.ToString().ToUpper() + ".jpg") before uploading.
+        </div>
 
-    <a href="@Url.Action("Dashboard", "User")" class="btn btn-primary">Back to Dashboard</a>
+        <form id="editProfileForm" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div class="form-group">
+                <label for="profilePicture" class="control-label">Profile Picture</label>
+                <input type="file" id="profilePicture" name="profilePicture" class="form-control" accept="image/*" required />
+            </div>
+            <div class="button-group">
+                <button type="submit" id="uploadButton" class="btn btn-primary">Upload</button>
+                <a href="@Url.Action("Dashboard", "User")" class="btn btn-primary">Back to Dashboard</a>
+            </div>
+        </form>
+    </div>
 </div>
 
 <div class="overlay" id="popupOverlay"></div>
@@ -368,7 +444,7 @@
                         if (response.exists) {
                             showConfirmPopup("A profile picture (" + response.fileName + ") already exists. Do you want to replace it?");
                         } else {
-                            submitForm(false); 
+                            submitForm(false);
                         }
                     },
                     error: function () {
@@ -386,7 +462,7 @@
             });
             $("#popupConfirm").click(function () {
                 hidePopup();
-                submitForm(true); 
+                submitForm(true);
             });
 
             function submitForm(replaceConfirmed) {

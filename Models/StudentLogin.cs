@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace StudentERP.Models;
+﻿namespace StudentERP.Models;
 
 public partial class StudentLogin
 {
@@ -18,6 +15,8 @@ public partial class StudentLogin
     public virtual AdmissionDetail? AdmissionDetail { get; set; }
 
     public virtual ContactDetail? ContactDetail { get; set; }
+
+    public virtual ICollection<Otp> Otps { get; set; } = new List<Otp>();
 
     public virtual ParentsDetail? ParentsDetail { get; set; }
 

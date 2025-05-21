@@ -1,10 +1,10 @@
-using Microsoft.EntityFrameworkCore;
-using StudentERP.Models;
-using StudentERP.Repository.IRepository;
-using StudentERP.Repository;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using StudentERP.Models;
+using StudentERP.Repository;
+using StudentERP.Repository.IRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,8 +52,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-app.UseAuthentication(); 
-app.UseSession(); 
+app.UseAuthentication();
+app.UseSession();
 
 app.UseAuthorization();
 

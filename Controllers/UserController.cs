@@ -1,39 +1,29 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using StudentERP.Models;
 using StudentERP.Repository.IRepository;
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.IO;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
-using MimeKit;
-using MailKit.Net.Smtp;
-using Microsoft.Extensions.Options;
 
 namespace StudentERP.Controllers
 {
     public class UserController : Controller
     {
         private readonly IStudentLoginRepository _studentLoginRepository;
-        private readonly IWebHostEnvironment _environment;
         private readonly IConfiguration _configuration;
         private readonly SmtpSettings _smtpSettings;
 
-        public UserController(IStudentLoginRepository studentLoginRepository, IWebHostEnvironment environment, IConfiguration configuration, IOptions<SmtpSettings> smtpSettings)
+        public UserController(IStudentLoginRepository studentLoginRepository, IConfiguration configuration, IOptions<SmtpSettings> smtpSettings)
         {
             _studentLoginRepository = studentLoginRepository;
-            _environment = environment;
             _configuration = configuration;
             _smtpSettings = smtpSettings.Value;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Dashboard()
+        public async Task<IActionResult> Dashboard(string semester = null)
         {
             var email = HttpContext.Session.GetString("StudentEmail");
             Console.WriteLine($"Dashboard - Email from session: {email}");
@@ -56,6 +46,13 @@ namespace StudentERP.Controllers
             var parentsDetails = await _studentLoginRepository.GetParentsDetails(student.StudentId);
             var studentBatch = await _studentLoginRepository.GetStudentBatch(student.StudentId);
 
+            // Determine the semester to display
+            string displaySemester = semester;
+            if (string.IsNullOrEmpty(semester) || !await _studentLoginRepository.IsValidSemester(studentBatch.Did, studentBatch.Fid, semester))
+            {
+                displaySemester = studentBatch?.CurrentSem ?? "N/A";
+            }
+
             var viewModel = new DashboardViewModel
             {
                 StudentEmail = email,
@@ -67,7 +64,9 @@ namespace StudentERP.Controllers
                 DegreeName = studentBatch != null ? (await _studentLoginRepository.GetDegreeName(studentBatch.Did))?.Dname : "N/A",
                 FieldName = studentBatch != null ? (await _studentLoginRepository.GetFieldName(studentBatch.Fid))?.Fname : "N/A",
                 CurrentSem = studentBatch?.CurrentSem ?? "N/A",
-                Subjects = studentBatch != null ? await _studentLoginRepository.GetSubjectsForSemester(studentBatch.CurrentSem) : new List<SubjectInfo>()
+                DisplaySem = displaySemester,
+                AvailableSemesters = studentBatch != null ? await _studentLoginRepository.GetAvailableSemesters(studentBatch.Did, studentBatch.Fid) : new List<string>(),
+                Subjects = await _studentLoginRepository.GetSubjectsForSemester(displaySemester)
             };
 
             Console.WriteLine("Dashboard - Returning view");
@@ -81,96 +80,10 @@ namespace StudentERP.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(StudentLogin model, string fullname)
         {
-            var existingStudent = await _studentLoginRepository.GetStudentByEmail(model.StudentMail);
-
-            if (existingStudent != null)
-                return Json(new { success = false, message = "Email already registered" });
-
-            var studentLogin = new StudentLogin
-            {
-                StudentMail = model.StudentMail,
-                HashPassword = model.HashPassword
-            };
-
-            var result = await _studentLoginRepository.RegisterStudent(studentLogin);
-            await SendWelcomeEmail(studentLogin.StudentMail, fullname);
-            if (result)
-                return Json(new { success = true });
-            return Json(new { success = false, message = "Registration failed. Please try again." });
+            var (success, message) = await _studentLoginRepository.RegisterStudentAsync(model, fullname);
+            return Json(new { success, message });
         }
 
-        private async Task SendWelcomeEmail(string toEmail, string fullName)
-        {
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(_smtpSettings.FromName, _smtpSettings.FromEmail));
-            message.To.Add(new MailboxAddress(fullName, toEmail));
-            message.Subject = "Welcome to StudentERP! Let's Get Started!";
-
-            message.Body = new TextPart("html")
-            {
-                Text = $@"<!DOCTYPE html>
-<html>
-<head>
-    <meta charset='utf-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <style>
-        body {{ font-family: 'Arial', sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; color: #374151; }}
-        .container {{ max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }}
-        .header {{ background: #374151; padding: 20px; text-align: center; color: #ffffff; }}
-        .header h1 {{ margin: 0; font-size: 24px; font-family: 'Permanent Marker', 'Arial', sans-serif; }}
-        .content {{ padding: 30px; line-height: 1.6; }}
-        .content h2 {{ color: #374151; font-size: 22px; margin-top: 0; }}
-        .content p {{ font-size: 16px; margin: 10px 0; color: #374151; }}
-        .cta-button {{ display: inline-block; padding: 12px 24px; margin: 20px 0; background: #ef4444; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: 600; font-size: 16px; }}
-        .cta-button:hover {{ background: #dc2626; }}
-        .footer {{ background: #f9fafb; padding: 15px; text-align: center; font-size: 14px; color: #4b5563; border-top: 1px solid #d1d5db; }}
-        .footer a {{ color: #ef4444; text-decoration: none; }}
-        @media (max-width: 600px) {{
-            .container {{ margin: 10px; }}
-            .header h1 {{ font-size: 20px; }}
-            .content {{ padding: 20px; }}
-            .content h2 {{ font-size: 18px; }}
-            .content p {{ font-size: 14px; }}
-            .cta-button {{ padding: 10px 20px; font-size: 14px; }}
-        }}
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <div class='header'>
-            <h1>Welcome to StudentERP!</h1>
-        </div>
-        <div class='content'>
-            <h2>Hello {toEmail},</h2>
-            <p>Your journey with StudentERP starts now, and we’re thrilled to have you on board!</p>
-            <p>Your account is all set, opening the door to a seamless way to manage your academic world. Dive into your personalized dashboard to explore your courses, track progress, and more.</p>
-            
-            <p>Have questions? Our team is here to help you every step of the way.</p>
-            <p>Warm regards,<br>The StudentERP Team</p>
-        </div>
-        <div class='footer'>
-            <p>&copy; 2025 StudentERP | Contact Support</a></p>
-        </div>
-    </div>
-</body>
-</html>"
-            };
-
-            using (var client = new SmtpClient())
-            {
-                try
-                {
-                    await client.ConnectAsync(_smtpSettings.Host, _smtpSettings.Port, MailKit.Security.SecureSocketOptions.StartTls);
-                    await client.AuthenticateAsync(_smtpSettings.Username, _smtpSettings.Password);
-                    await client.SendAsync(message);
-                    await client.DisconnectAsync(true);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Failed to send email: {ex.Message}");
-                }
-            }
-        }
         [HttpGet]
         public IActionResult Login()
         {
@@ -181,20 +94,19 @@ namespace StudentERP.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(StudentLogin model)
+        public async Task<IActionResult> Login(StudentLogin model, string action = null, string otpCode = null)
         {
             if (!ModelState.IsValid)
                 return Json(new { success = false, message = "Validation failed" });
 
-            var student = await _studentLoginRepository.GetStudentByEmail(model.StudentMail);
-            if (student == null || student.HashPassword != _studentLoginRepository.HashPassword(model.HashPassword) || !student.IsActive)
-                return Json(new { success = false, message = "Invalid email, password, or inactive account" });
-
-            HttpContext.Session.SetString("StudentEmail", student.StudentMail);
-            HttpContext.Session.SetString("StudentId", student.StudentId.ToString());
-            var token = GenerateJwtToken(student);
-
-            return Json(new { success = true, token = token });
+            var result = await _studentLoginRepository.ValidateLoginAsync(model, action, otpCode);
+            if (result.Success && result.Token != null)
+            {
+                HttpContext.Session.SetString("StudentEmail", model.StudentMail);
+                HttpContext.Session.SetString("StudentId", result.StudentId.ToString());
+                return Json(new { success = true, token = result.Token, redirectUrl = Url.Action("Dashboard") });
+            }
+            return Json(new { success = result.Success, requiresOtp = result.RequiresOtp, message = result.Message });
         }
 
         private string GenerateJwtToken(StudentLogin student)
@@ -239,7 +151,7 @@ namespace StudentERP.Controllers
             {
                 StudentEmail = email,
                 HasProfilePicture = profile != null && !string.IsNullOrEmpty(profile.ProfilePictureName),
-                StudentId = student.StudentId // Added
+                StudentId = student.StudentId
             };
             return View(viewModel);
         }
@@ -248,31 +160,14 @@ namespace StudentERP.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(string CurrentPassword, string CurrentPasswordConfirm, string NewPassword)
         {
-            if (string.IsNullOrEmpty(HttpContext.Session.GetString("StudentEmail")))
+            var email = HttpContext.Session.GetString("StudentEmail");
+            if (string.IsNullOrEmpty(email))
                 return Json(new { success = false, message = "You must be logged in to change your password." });
 
-            if (string.IsNullOrEmpty(CurrentPassword) || string.IsNullOrEmpty(CurrentPasswordConfirm) || string.IsNullOrEmpty(NewPassword))
-                return Json(new { success = false, message = "All fields are required." });
-
-            if (CurrentPassword != CurrentPasswordConfirm)
-                return Json(new { success = false, message = "Current passwords do not match." });
-
-            var email = HttpContext.Session.GetString("StudentEmail");
-            var student = await _studentLoginRepository.GetStudentByEmail(email);
-            if (student == null || student.HashPassword != _studentLoginRepository.HashPassword(CurrentPassword))
-                return Json(new { success = false, message = "Current password is incorrect." });
-
-            if (_studentLoginRepository.HashPassword(NewPassword) == student.HashPassword)
-                return Json(new { success = false, message = "New password must be different from the current password." });
-
-            student.HashPassword = _studentLoginRepository.HashPassword(NewPassword);
-            var result = await _studentLoginRepository.UpdateStudent(student);
-            if (result)
-            {
+            var (success, message) = await _studentLoginRepository.ChangePasswordAsync(email, CurrentPassword, CurrentPasswordConfirm, NewPassword);
+            if (success)
                 TempData["Success"] = "Password updated successfully!";
-                return Json(new { success = true });
-            }
-            return Json(new { success = false, message = "Failed to update password. Please try again." });
+            return Json(new { success, message });
         }
 
         [HttpGet]
@@ -299,111 +194,22 @@ namespace StudentERP.Controllers
         {
             var email = HttpContext.Session.GetString("StudentEmail");
             if (string.IsNullOrEmpty(email))
-            {
                 return Json(new { exists = false, message = "Not logged in" });
-            }
 
-            var student = await _studentLoginRepository.GetStudentByEmail(email);
-            if (student == null)
-            {
-                return Json(new { exists = false, message = "Invalid session" });
-            }
-
-            var profile = await _studentLoginRepository.GetStudentProfile(student.StudentId);
-            if (profile != null && !string.IsNullOrEmpty(profile.ProfilePictureName))
-            {
-                var filePath = Path.Combine(_environment.WebRootPath, "Images", profile.ProfilePictureName);
-                if (System.IO.File.Exists(filePath))
-                {
-                    return Json(new { exists = true, fileName = profile.ProfilePictureName });
-                }
-            }
-
-            return Json(new { exists = false });
+            var (exists, fileName, message) = await _studentLoginRepository.CheckProfilePictureAsync(email);
+            return Json(new { exists, fileName, message });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditProfile(IFormFile profilePicture, bool replaceConfirmed = false)
         {
-            Console.WriteLine("Entering EditProfile POST - Before anything else");
-            try
-            {
-                Console.WriteLine("EditProfile POST started - Inside try block");
+            var email = HttpContext.Session.GetString("StudentEmail");
+            if (string.IsNullOrEmpty(email))
+                return Json(new { success = false, message = "You must be logged in." });
 
-                var email = HttpContext.Session.GetString("StudentEmail");
-                Console.WriteLine($"Session email retrieved: {email ?? "null"}");
-                if (string.IsNullOrEmpty(email))
-                {
-                    Console.WriteLine("No email in session");
-                    return Json(new { success = false, message = "You must be logged in." });
-                }
-
-                Console.WriteLine($"Fetching student for email: {email}");
-                var student = await _studentLoginRepository.GetStudentByEmail(email);
-                if (student == null)
-                {
-                    Console.WriteLine("Student not found");
-                    return Json(new { success = false, message = "Invalid session." });
-                }
-
-                Console.WriteLine($"Profile picture: {profilePicture?.FileName ?? "null"}");
-                if (profilePicture == null || profilePicture.Length == 0)
-                {
-                    Console.WriteLine("No file selected");
-                    return Json(new { success = false, message = "Please select a file." });
-                }
-
-                var expectedFileName = $"{student.StudentId.ToString().ToUpper()}.jpg";
-                if (profilePicture.FileName != expectedFileName)
-                {
-                    Console.WriteLine($"Invalid filename. Expected: {expectedFileName}, Got: {profilePicture.FileName}");
-                    return Json(new { success = false, message = $"Invalid filename. Please rename your file to '{expectedFileName}' and try again." });
-                }
-
-                var fileName = expectedFileName;
-                var filePath = Path.Combine(_environment.WebRootPath, "Images", fileName);
-
-                var existingProfile = await _studentLoginRepository.GetStudentProfile(student.StudentId);
-                if (existingProfile != null && !string.IsNullOrEmpty(existingProfile.ProfilePictureName) && !replaceConfirmed)
-                {
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        Console.WriteLine("Profile picture already exists, awaiting confirmation");
-                        return Json(new { success = false, confirmRequired = true, message = $"A profile picture ({fileName}) already exists. Do you want to replace it?" });
-                    }
-                }
-
-                Console.WriteLine($"WebRootPath: {_environment.WebRootPath}");
-                Console.WriteLine($"Saving file to: {filePath}");
-                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    Console.WriteLine("Writing file stream");
-                    await profilePicture.CopyToAsync(fileStream);
-                }
-
-                var profile = new StudentProfile
-                {
-                    StudentId = student.StudentId,
-                    ProfilePictureName = fileName
-                };
-                Console.WriteLine($"Saving profile to database: StudentId={profile.StudentId}, FileName={profile.ProfilePictureName}");
-                var saveResult = await _studentLoginRepository.SaveOrReplaceStudentProfile(profile);
-                if (!saveResult)
-                {
-                    Console.WriteLine("Failed to save profile to database");
-                    return Json(new { success = false, message = "Failed to save profile data." });
-                }
-
-                Console.WriteLine("File and profile saved successfully");
-                return Json(new { success = true, message = "Profile picture uploaded and saved successfully!" });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Upload error: {ex.Message}\nStackTrace: {ex.StackTrace}");
-                return Json(new { success = false, message = $"Upload error: {ex.Message}" });
-            }
+            var (success, confirmRequired, message) = await _studentLoginRepository.UpdateStudentProfileAsync(email, profilePicture, replaceConfirmed);
+            return Json(new { success, confirmRequired, message });
         }
     }
 
@@ -418,9 +224,10 @@ namespace StudentERP.Controllers
         public string? DegreeName { get; set; }
         public string? FieldName { get; set; }
         public string? CurrentSem { get; set; }
+        public string DisplaySem { get; set; } = null!;
+        public List<string> AvailableSemesters { get; set; } = new List<string>();
         public List<SubjectInfo> Subjects { get; set; } = new List<SubjectInfo>();
     }
-
     public class SubjectInfo
     {
         public string SubjectName { get; set; } = null!;
@@ -433,7 +240,7 @@ namespace StudentERP.Controllers
     {
         public string StudentEmail { get; set; } = null!;
         public bool HasProfilePicture { get; set; }
-        public Guid StudentId { get; set; } // Added
+        public Guid StudentId { get; set; }
     }
 
     public class EditProfileViewModel
