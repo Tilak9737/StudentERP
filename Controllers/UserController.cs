@@ -211,6 +211,18 @@ namespace StudentERP.Controllers
             var (success, confirmRequired, message) = await _studentLoginRepository.UpdateStudentProfileAsync(email, profilePicture, replaceConfirmed);
             return Json(new { success, confirmRequired, message });
         }
+        public ActionResult About()
+        {
+            var email = HttpContext.Session.GetString("StudentEmail");
+            Console.WriteLine($"Dashboard - Email from session: {email}");
+            if (string.IsNullOrEmpty(email))
+            {
+                Console.WriteLine("Dashboard - No email in session, redirecting to Login");
+                return RedirectToAction("Login");
+            }
+
+            return View();
+        }
     }
 
     public class DashboardViewModel

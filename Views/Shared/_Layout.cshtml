@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿﻿
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -34,24 +35,24 @@
             transition: color 0.3s ease;
         }
 
-            .navbar-brand h1::after {
-                content: '';
-                position: absolute;
-                bottom: -3px;
-                left: 0;
-                width: 0;
-                height: 2px;
-                background: #ef4444; /* Matches dashboard download button */
-                transition: width 0.3s ease;
-            }
+        .navbar-brand h1::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #ef4444; /* Matches dashboard download button */
+            transition: width 0.3s ease;
+        }
 
-            .navbar-brand h1:hover {
-                color: #f3f4f6; /* Light gray for hover contrast */
-            }
+        .navbar-brand h1:hover {
+            color: #f3f4f6; /* Light gray for hover contrast */
+        }
 
-                .navbar-brand h1:hover::after {
-                    width: 100%; /* Underline animation */
-                }
+        .navbar-brand h1:hover::after {
+            width: 100%; /* Underline animation */
+        }
 
         .navbar-nav {
             list-style: none;
@@ -61,24 +62,24 @@
             align-items: center;
         }
 
-            .navbar-nav li {
-                margin-left: 20px;
-            }
+        .navbar-nav li {
+            margin-left: 20px;
+        }
 
-            .navbar-nav a {
-                color: #ffffff; /* White text like dashboard */
-                text-decoration: none;
-                font-size: 1em;
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                padding: 8px 15px;
-                border-radius: 4px; /* Matches dashboard buttons */
-                transition: all 0.3s ease;
-            }
+        .navbar-nav a {
+            color: #ffffff; /* White text like dashboard */
+            text-decoration: none;
+            font-size: 1em;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 8px 15px;
+            border-radius: 4px; /* Matches dashboard buttons */
+            transition: all 0.3s ease;
+        }
 
-                .navbar-nav a:hover {
-                    background: #ef4444; /* Matches dashboard download button */
-                    color: #ffffff;
-                }
+        .navbar-nav a:hover {
+            background: #ef4444; /* Matches dashboard download button */
+            color: #ffffff;
+        }
 
         .hamburger {
             font-size: 1.4em;
@@ -91,10 +92,10 @@
             transition: background 0.3s ease;
         }
 
-            .hamburger:hover {
-                background: #ef4444; /* Matches dashboard download button */
-                border-radius: 4px;
-            }
+        .hamburger:hover {
+            background: #ef4444; /* Matches dashboard download button */
+            border-radius: 4px;
+        }
 
         .dropdown-menu {
             display: none;
@@ -111,30 +112,52 @@
             border: 1px solid #d1d5db; /* Matches dashboard borders */
         }
 
-            .dropdown-menu li {
-                margin: 0;
-            }
+        .dropdown-menu li {
+            margin: 0;
+        }
 
-            .dropdown-menu a {
-                display: block;
-                color: #ffffff; /* White text */
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                padding: 10px 20px;
-                text-decoration: none;
-                transition: all 0.3s ease;
-            }
+        .dropdown-menu a {
+            display: block;
+            color: #ffffff; /* White text */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 10px 20px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
 
-                .dropdown-menu a:hover {
-                    background: #ef4444; /* Matches dashboard download button */
-                    color: #ffffff;
-                }
+        .dropdown-menu a:hover {
+            background: #ef4444; /* Matches dashboard download button */
+            color: #ffffff;
+        }
 
-            .dropdown-menu.show {
-                display: block;
-            }
+        .dropdown-menu.show {
+            display: block;
+        }
 
         main {
             padding-top: 20px;
+        }
+
+        /* Footer styling */
+        .footer {
+            background: #374151;
+            color: #fff;
+            padding: 24px 0 12px 0;
+            text-align: center;
+            border-top: 1px solid #d1d5db;
+            margin-top: 40px;
+        }
+        .footer a {
+            color: #ef4444;
+            text-decoration: underline;
+            margin: 0 5px;
+            transition: color 0.2s;
+        }
+        .footer a:hover { color: #d97706; }
+        .footer .footer-secondary {
+            margin-top: 10px;
+            font-size: 0.95em;
+            color: #d1d5db;
         }
 
         @@media (max-width: 768px) {
@@ -149,20 +172,20 @@
                 margin-top: 10px;
             }
 
-                .navbar-nav li {
-                    margin: 5px 0;
-                }
+            .navbar-nav li {
+                margin: 5px 0;
+            }
 
-                .navbar-nav a {
-                    display: block;
-                    text-align: center;
-                    font-size: 0.9em;
-                    padding: 6px 10px;
-                }
+            .navbar-nav a {
+                display: block;
+                text-align: center;
+                font-size: 0.9em;
+                padding: 6px 10px;
+            }
 
-                .navbar-nav .hamburger {
-                    margin: 0 auto;
-                }
+            .navbar-nav .hamburger {
+                margin: 0 auto;
+            }
 
             .dropdown-menu {
                 position: static;
@@ -197,6 +220,7 @@
                         <ul class="dropdown-menu">
                             <li><a href="@Url.Action("Profile", "User")">Profile</a></li>
                             <li><a href="@Url.Action("Logout", "User")">Logout</a></li>
+                            <li><a href="@Url.Action("About", "User")">About</a></li>
                         </ul>
                     </li>
                 }
@@ -221,5 +245,32 @@
             });
         });
     </script>
+    <footer class="footer">
+        @if (string.IsNullOrEmpty(Context.Session.GetString("StudentEmail")))
+        {
+            <div>
+                Welcome to StudentERP!
+                Please
+                <a href="@Url.Action("Login", "User")">Login</a>
+                or
+                <a href="@Url.Action("Register", "User")">Register</a>.
+            </div>
+        }
+        else
+        {
+            <div>
+                Logged in as <strong>@Context.Session.GetString("StudentEmail")</strong>
+                |
+                <a href="@Url.Action("Dashboard", "User")">Dashboard</a>
+                |
+                <a href="@Url.Action("Logout", "User")">Logout</a>
+                |
+                <a href="@Url.Action("About", "User")">About</a>
+            </div>
+        }
+        <div class="footer-secondary">
+            &copy; @DateTime.Now.Year StudentERP. All rights reserved.
+        </div>
+    </footer>
 </body>
 </html>

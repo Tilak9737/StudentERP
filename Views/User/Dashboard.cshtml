@@ -397,8 +397,15 @@
             .pagination-btn.arrow {
                 padding: 6px 10px;
             }
+
+        .dashboard-wrapper {
+            position: relative;
+            width: 100%;
+            box-sizing: border-box;
+        }
     }
 </style>
+
 
 <div class="dashboard-wrapper">
     <!-- Welcome Banner -->
@@ -488,23 +495,37 @@
                     }
                 </tbody>
             </table>
-            <!-- Semester Pagination -->
+            <!-- Semester Pagination (Smart Ellipsis Style) -->
             <div class="pagination-container">
                 @if (Model.AvailableSemesters.Any())
                 {
-                    <!-- Numbered Buttons -->
+                    
+                        int currentPage = semesters.IndexOf(Model.DisplaySem) + 1;
+                        int totalPages = semesters.Count;
+                        Func<int, string> semByIndex = i => semesters[i - 1];
+                    
                     <div class="pagination-numbers">
-                        @foreach (var sem in semesters)
+                        @for (int i = 1; i <= totalPages; i++)
                         {
-                            <form asp-action="Dashboard" method="get">
-                                <input type="hidden" name="semester" value="@sem" />
-                                <button type="submit" class="pagination-btn @(Model.DisplaySem == sem ? "active" : "")">
-                                    @GetSemesterNumber(sem)
-                                </button>
-                            </form>
+                            if (i == 1 || i == totalPages || Math.Abs(i - currentPage) <= 1)
+                            {
+                                <form asp-action="Dashboard" method="get" style="display:inline;">
+                                    <input type="hidden" name="semester" value="@semByIndex(i)" />
+                                    <button type="submit" class="pagination-btn @(currentPage == i ? "active" : "")">
+                                        @GetSemesterNumber(semByIndex(i))
+                                    </button>
+                                </form>
+                            }
+                            else if (i == currentPage - 2 && currentPage - 3 > 1)
+                            {
+                                <span style="padding:0 5px;">...</span>
+                            }
+                            else if (i == currentPage + 2 && currentPage + 3 < totalPages)
+                            {
+                                <span style="padding:0 5px;">...</span>
+                            }
                         }
                     </div>
-                    <!-- Arrow Buttons -->
                     <div class="pagination-arrows">
                         <form asp-action="Dashboard" method="get">
                             <input type="hidden" name="semester" value="@prevSem" />

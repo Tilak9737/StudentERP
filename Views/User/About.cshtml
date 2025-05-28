@@ -1,0 +1,72 @@
+﻿@{
+    ViewData["Title"] = "About";
+    var googleMapsApiKey = ViewBag.GoogleMapsApiKey as string;
+}
+
+<style>
+    .about-container {
+        max-width: 900px;
+        margin: 40px auto 0 auto;
+        padding: 24px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.06);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .about-header {
+        color: #374151;
+        font-size: 2.1em;
+        font-weight: 700;
+        margin-bottom: 18px;
+    }
+
+    .about-text {
+        color: #374151;
+        font-size: 1.1em;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+
+    .map-section {
+        height: 380px;
+        width: 100%;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #d1d5db;
+        margin-bottom: 8px;
+    }
+</style>
+
+<div class="about-container">
+    <div class="about-header">About StudentERP</div>
+    <div class="about-text">
+        Welcome to StudentERP! <br />
+        StudentERP is an all-in-one platform designed to streamline student information, making it easy to manage academic records, profiles, and communication.<br>
+        Our mission is to empower students and faculty with seamless access to essential tools and resources.<br>
+        <br>
+        <strong>Contact Us:</strong><br>
+        Email: studentERP.Pvt.Ltd@gmail.com <br>
+        Phone: +919999999999 <br>
+        Address: Vadodara, Gujarat, India
+    </div>
+    <div class="map-section" id="map"></div>
+</div>
+
+<script>
+    function initMap() {
+        var location = { lat: 22.3100085, lng: 73.175456};
+        var map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 15,
+            center: location
+        });
+        var marker = new google.maps.Marker({
+            position: location,
+            map: map,
+            title: 'StudentERP Headquarters'
+        });
+    }
+</script>
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=@googleMapsApiKey&callback=initMap">
+</script>
